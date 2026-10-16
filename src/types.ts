@@ -1,4 +1,14 @@
 /**
+ * Supported semantic data types for a CSV column.
+ */
+export type CsvColumnDataType = 'boolean' | 'date' | 'json' | 'jsonl' | 'number' | 'text';
+
+/**
+ * Supported display format presets for a `date` CSV column.
+ */
+export type CsvDateFormat = 'ISO' | 'MM/DD/YYYY' | 'MMM D, YYYY' | 'YYYY-MM-DD';
+
+/**
  * Line ending sequence detected in a CSV document.
  */
 export type CsvLineEnding = '\n' | '\r\n';
@@ -74,6 +84,36 @@ export interface CsvCellToken {
 }
 
 /**
+ * Display, formatting, and layout configuration for a single CSV column.
+ */
+export interface CsvColumnSchema {
+  /**
+   * Semantic data type used to render and inspect cells in this column.
+   */
+  dataType: CsvColumnDataType;
+
+  /**
+   * Date format pattern applied when `dataType === 'date'`.
+   */
+  dateFormat?: CsvDateFormat;
+
+  /**
+   * Fixed number of decimal places (`0..6`) when `dataType === 'number'`, or `null` for auto.
+   */
+  decimals?: number | null;
+
+  /**
+   * Whether the column is pinned (frozen) to the left edge of the grid.
+   */
+  pinned?: boolean;
+
+  /**
+   * Column width in pixels (defaults to `160`).
+   */
+  width?: number;
+}
+
+/**
  * Parsed representation of a CSV document preserving structural formatting metadata.
  */
 export interface CsvDocumentModel {
@@ -96,6 +136,21 @@ export interface CsvDocumentModel {
    * Whether the source document ended with a trailing newline sequence.
    */
   trailingNewline: boolean;
+}
+
+/**
+ * Per-file schema configuration persisted under `vscodeTailor.csv.schemas` in settings.
+ */
+export interface CsvFileSchemaConfig {
+  /**
+   * Map from column key (header label or zero-based index string) to `CsvColumnSchema`.
+   */
+  columns: Record<string, CsvColumnSchema>;
+
+  /**
+   * Remembered sticky header row count for this CSV file.
+   */
+  headerRowCount?: number;
 }
 
 /**
@@ -267,4 +322,3 @@ export interface TailorFeatureModule {
    */
   deactivate?(): void;
 }
-

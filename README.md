@@ -17,39 +17,60 @@ toggled on or off dynamically without restarting VS Code:
 - **Native VS Code Settings**: Toggle `vscodeTailor.<module>.enabled` under
   `Settings -> Extensions -> VS Code Tailor`.
 
-### 2. CSV Workbench (`csv`)
+### 2. CSV Workbench (`csv` — AG Grid Community Style + Typed Column Schemas)
 
-Provides both an **Interactive CSV Grid Custom Editor** and **Rainbow CSV Text Highlighting**, with
-one-click switching between views:
+Provides both an **AG Grid Community-style CSV Grid Custom Editor** and **Rainbow CSV Text
+Highlighting**, with one-click switching between views and per-file schema persistence in
+`.vscode/settings.json`:
 
-- **Interactive Grid View (`vscodeTailor.csvGrid`)**:
-  - Opens `.csv` files by default in a theme-aware spreadsheet grid backed directly by
-    `vscode.TextDocument`.
-  - **Multi-Row Sticky Headers (`0..N`)**: Use the toolbar stepper (`−` / `+`) or click the `📌`
-    button on any row gutter to pin the top `0..N` contiguous rows as sticky headers.
-  - **Real Data Sorting**: Click `▲` (Ascending) or `▼` (Descending) on any column header to sort
-    data rows below the pinned header block (numeric-aware, empty cells last) and persist the sorted
-    order directly to the `.csv` document (full `Cmd+Z` Undo/Redo support).
-  - **Non-Destructive View Filtering**: Filter visible data rows using the global search bar or
-    per-column filter inputs without modifying the underlying `.csv` file.
-  - **Inline Editing & Structural Actions**: Edit any cell inline, or add/remove rows and columns.
-- **Rainbow CSV Text View**:
-  - Colors each CSV column in the standard VS Code Text Editor using a high-contrast 10-color
-    palette.
-  - Displays a hover tooltip on any cell showing its 1-based column number, composite header title,
-    row number, and unescaped value.
-- **One-Click View Toggle**:
-  - Click the `$(code)` (**Switch to Text View**) or `$(table)` (**Switch to Grid View**) icon in
-    the VS Code Editor Title bar (or the Grid View toolbar button) to flip between views at any
-    time.
+- **AG Grid-Style Local Grid View (`vscodeTailor.csvGrid`)**:
+  - **Resizable & Left-Pinned Columns**: Drag the right edge of any column header to resize its
+    width (`90px..800px`), or click `📌` in the column header to freeze/pin columns to the left edge
+    during horizontal scrolling.
+  - **Click-Header-to-Sort & Floating Filter Row**: Click any column header title (or `▲` / `▼`) to
+    perform real numeric-aware sorting of data rows below the sticky header block (`Cmd+Z`
+    Undo/Redo supported). Use the floating filter row directly beneath column headers or the global
+    quick-filter bar for non-destructive view filtering.
+  - **Cell Selection, Keyboard Navigation & Status Bar**: Single-click any cell to focus it (with an
+    AG Grid focus border and active row highlight), navigate with `ArrowUp`/`Down`/`Left`/`Right`,
+    press `Enter` or double-click to edit inline, and inspect row/column counts and active cell
+    metadata in the bottom status bar.
+  - **Multi-Row Sticky Headers (`0..N`)**: Use the toolbar stepper (`−` / `+`) or click `📌` on any
+    row gutter to pin the top `0..N` contiguous rows as sticky headers.
+- **Typed Column Schemas persisted in `.vscode/settings.json` (`vscodeTailor.csv.schemas`)**:
+  - Designate any column's data type from its header dropdown (`TEXT`, `BOOLEAN`, `NUMBER`, `DATE`,
+    `JSON`, `JSONL`); settings are automatically remembered per CSV file in `.vscode/settings.json`:
+    - **`BOOLEAN`**: Renders an interactive checkbox directly in the grid cell whenever the value is
+      boolean-like (`true`/`false`, `1`/`0`, `yes`/`no`), and falls back to displaying raw text for
+      any other cell content.
+    - **`NUMBER`**: Right-aligns numeric cells using `tabular-nums` and formats values to your
+      chosen decimal precision (`Auto`, `0`, `1`, `2`, `3`, or `4` decimal places).
+    - **`DATE`**: Formats date strings in the grid according to your chosen column preset
+      (`YYYY-MM-DD`, `MM/DD/YYYY`, `MMM D, YYYY`, or `ISO`).
+    - **`JSON` & `JSONL`**: Renders a compact `{JSON}` / `JSONL` badge + single-line preview in the
+      grid cell and opens the **Right-Side Cell Inspector Drawer** when selected.
+- **Right-Side Cell Inspector Drawer**:
+  - Automatically opens when selecting a `JSON`, `JSONL`, or multi-line/long `TEXT` cell (or toggle
+    manually via the `Inspector Drawer` toolbar button).
+  - **`JSON` Columns**: Switch between an IDE-style **Mini-Form** property sheet (edit individual
+    keys with type-aware text, number, and checkbox inputs, or add/delete keys) and a **Formatted
+    Code** editor with validation.
+  - **`JSONL` Columns**: Switch between a stack of **Object `#1..#N` Mini-Form Cards** (edit fields,
+    add new JSONL objects, or remove objects) and a **Formatted Code** editor.
+  - **`TEXT` Columns**: Provides a clean, soft-wrapped plain-text `<textarea>` without syntax
+    highlighting for comfortable multi-line prose editing.
+- **Rainbow CSV Text View & One-Click View Toggle**:
+  - Colors each CSV column in the standard VS Code Text Editor using a 10-color palette with hover
+    tooltips, and provides a one-click `$(code)` / `$(table)` toggle in the Editor Title bar.
 
 ## Configuration Settings
 
-| Setting                              | Type      | Default | Description                                                                   |
-| :----------------------------------- | :-------- | :------ | :---------------------------------------------------------------------------- |
-| `vscodeTailor.csv.enabled`           | `boolean` | `true`  | Enable the CSV Workbench module (Grid View + Rainbow CSV Text Decorator).     |
-| `vscodeTailor.csv.rainbowEnabled`    | `boolean` | `true`  | Enable Rainbow CSV column highlighting and hover tooltips in the Text Editor. |
-| `vscodeTailor.csv.defaultHeaderRows` | `number`  | `1`     | Default number of top contiguous rows pinned as sticky headers in Grid View.  |
+| Setting                              | Type      | Default | Description                                                                            |
+| :----------------------------------- | :-------- | :------ | :------------------------------------------------------------------------------------- |
+| `vscodeTailor.csv.enabled`           | `boolean` | `true`  | Enable the CSV Workbench module (Grid View + Rainbow CSV Text Decorator).              |
+| `vscodeTailor.csv.rainbowEnabled`    | `boolean` | `true`  | Enable Rainbow CSV column highlighting and hover tooltips in the Text Editor.          |
+| `vscodeTailor.csv.defaultHeaderRows` | `number`  | `1`     | Default number of top contiguous rows pinned as sticky headers in Grid View.           |
+| `vscodeTailor.csv.schemas`           | `object`  | `{}`    | Per-file CSV column schemas (`dataType`, `decimals`, `dateFormat`, `pinned`, `width`). |
 
 ## Development & Local Installation
 
@@ -70,4 +91,3 @@ bun run deploy
 ## License
 
 MIT
-

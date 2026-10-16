@@ -108,4 +108,3 @@ export function deactivate(): void {
   _.registry?.deactivateAll();
   _.registry = null;
 }
-

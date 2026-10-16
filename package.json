@@ -1,8 +1,8 @@
 {
   "name": "vscode-tailor",
   "displayName": "VS Code Tailor",
-  "description": "Personal, modular VS Code workbench extension with an interactive CSV Grid Editor, Rainbow CSV text highlighting, and toggleable feature modules.",
-  "version": "0.1.0",
+  "description": "Personal, modular VS Code workbench extension with an AG Grid-style CSV Editor, typed column schemas, JSON/JSONL inspector drawer, and Rainbow CSV text highlighting.",
+  "version": "0.2.0",
   "publisher": "chris-strolia-davis",
   "license": "MIT",
   "author": "Chris Strolia-Davis <christopher.stroliadavis@gmail.com>",
@@ -82,6 +82,11 @@
           "default": 1,
           "minimum": 0,
           "description": "Default number of top contiguous rows to pin as sticky headers in the CSV Grid View."
+        },
+        "vscodeTailor.csv.schemas": {
+          "type": "object",
+          "default": {},
+          "description": "Per-file CSV column schema definitions (data types, number decimals, date formats, pinned state, column widths, and header row counts) keyed by workspace-relative file path."
         }
       }
     }

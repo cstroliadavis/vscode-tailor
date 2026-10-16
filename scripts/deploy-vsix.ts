@@ -139,4 +139,3 @@ interface PackageManifest {
 if (import.meta.main) {
   await packageAndDeployVsix();
 }
-

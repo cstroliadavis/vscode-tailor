@@ -1,8 +1,19 @@
-import type { CsvSortDirection } from '../../types.ts';
-import { buildColumnHeaderLabel, filterCsvRows } from './csv-operations.ts';
-import { RAINBOW_COLORS } from './rainbow-helpers.ts';
+import { resolveColumnSchema } from './csv-column-types.ts';
+import { filterCsvRows } from './csv-operations.ts';
+import type { CellLayoutSpec } from './webview-cell-renderer.ts';
+import { isCoordinateMatch, resolveCellInnerContent } from './webview-cell-renderer.ts';
+import {
+  applyColumnLayoutStyles,
+  computePinnedLeftOffsets,
+  createAgHeaderRows,
+} from './webview-header.ts';
+import { createCellInspectorDrawer } from './webview-inspector.ts';
 import type { GridViewActions, GridViewState } from './webview-toolbar.ts';
-import { createCsvToolbarElement, createUiButton } from './webview-toolbar.ts';
+import {
+  createCsvStatusBarElement,
+  createCsvToolbarElement,
+  createUiButton,
+} from './webview-toolbar.ts';
 
 /**
  * Appends all pinned header rows (`0 .. headerRowCount - 1`) to the `<thead>` element.
@@ -13,10 +24,52 @@ function appendPinnedHeaderRows(
   actions: GridViewActions,
 ): void {
   const limit = Math.min(state.model.headerRowCount, state.model.rows.length);
+  const pinnedOffsets = computePinnedLeftOffsets(state, getRowColumnCount(state.model.rows));
 
   for (let rowIndex = 0; rowIndex < limit; rowIndex += 1) {
-    thead.appendChild(createGridRowElement(state, actions, { isHeader: true, rowIndex }));
+    thead.appendChild(
+      createGridRowElement(state, actions, { isHeader: true, pinnedOffsets, rowIndex }),
+    );
   }
+}
+
+/**
+ * Applies `.header-row-cell` and `.ag-cell-selected` classes to a `<td>` element.
+ */
+function applyCellSelectionClasses(
+  td: HTMLTableCellElement,
+  state: GridViewState,
+  cellSpec: { colIndex: number; isHeader: boolean; rowIndex: number },
+): void {
+  if (cellSpec.isHeader) {
+    td.classList.add('header-row-cell');
+  }
+
+  if (isCoordinateMatch(state.selectedCell, cellSpec.rowIndex, cellSpec.colIndex)) {
+    td.classList.add('ag-cell-selected');
+  }
+}
+
+/**
+ * Builds the split `.ag-workspace` container holding the scrollable grid and optional drawer.
+ */
+function buildAgWorkspace(
+  state: GridViewState,
+  actions: GridViewActions,
+  visibleRowIndices: number[],
+): HTMLDivElement {
+  const workspace = document.createElement('div');
+  const wrapper = document.createElement('div');
+  const table = document.createElement('table');
+  const drawer = createCellInspectorDrawer(state, actions);
+
+  workspace.className = 'ag-workspace';
+  wrapper.className = 'grid-wrapper';
+  table.append(buildTableHead(state, actions), buildTableBody(state, actions, visibleRowIndices));
+  wrapper.appendChild(table);
+  workspace.append(wrapper, ...(drawer ? [drawer] : []));
+
+  return workspace;
 }
 
 /**
@@ -28,180 +81,51 @@ function buildTableBody(
   visibleRowIndices: number[],
 ): HTMLTableSectionElement {
   const tbody = document.createElement('tbody');
+  const pinnedOffsets = computePinnedLeftOffsets(state, getRowColumnCount(state.model.rows));
 
   for (const rowIndex of visibleRowIndices) {
-    tbody.appendChild(createGridRowElement(state, actions, { isHeader: false, rowIndex }));
+    tbody.appendChild(
+      createGridRowElement(state, actions, { isHeader: false, pinnedOffsets, rowIndex }),
+    );
   }
 
   return tbody;
 }
 
 /**
- * Builds the `<thead>` element with column controls and pinned header rows.
+ * Builds the `<thead>` element with AG Grid column controls, floating filters, and pinned headers.
  */
 function buildTableHead(state: GridViewState, actions: GridViewActions): HTMLTableSectionElement {
   const thead = document.createElement('thead');
-  const colCount = state.model.rows.at(0)?.length ?? 0;
+  const pinnedOffsets = computePinnedLeftOffsets(state, getRowColumnCount(state.model.rows));
+  const [controlRow, filterRow] = createAgHeaderRows(state, actions, pinnedOffsets);
 
-  thead.appendChild(createColumnControlRow(state, actions, colCount));
+  thead.append(controlRow, filterRow);
   appendPinnedHeaderRows(thead, state, actions);
 
   return thead;
 }
 
 /**
- * Creates an editable cell `<td>` containing an `<input>` element bound to `(rowIndex, colIndex)`.
+ * Creates a single `<td>` cell with selection, inline-edit, and typed display rendering.
  */
 function createCellElement(
+  state: GridViewState,
   actions: GridViewActions,
-  cellSpec: { colIndex: number; isHeader: boolean; rowIndex: number; value: string },
+  cellSpec: CellLayoutSpec,
 ): HTMLTableCellElement {
   const td = document.createElement('td');
-  const input = document.createElement('input');
-  const color = RAINBOW_COLORS[cellSpec.colIndex % RAINBOW_COLORS.length]!;
+  const schema = resolveColumnSchema(state.fileSchema, state.model.rows, cellSpec.colIndex);
 
-  if (cellSpec.isHeader) {
-    td.className = 'header-row-cell';
-  }
-
-  Object.assign(input, {
-    className: 'cell-input',
-    type: 'text',
-    value: cellSpec.value,
-  });
-  input.style.color = color;
-  input.addEventListener('change', () => {
-    actions.onEditCell(cellSpec.rowIndex, cellSpec.colIndex, input.value);
-  });
-  td.appendChild(input);
+  applyColumnLayoutStyles(td, schema, cellSpec.pinnedLeftOffset);
+  applyCellSelectionClasses(td, state, cellSpec);
+  td.addEventListener('click', () => actions.onSelectCell(cellSpec.rowIndex, cellSpec.colIndex));
+  td.addEventListener('dblclick', () =>
+    actions.onStartEditingCell({ colIndex: cellSpec.colIndex, rowIndex: cellSpec.rowIndex }),
+  );
+  td.appendChild(resolveCellInnerContent(state, actions, { ...cellSpec, schema }));
 
   return td;
-}
-
-/**
- * Creates the sort and delete action buttons for a single column header.
- */
-function createColumnActionGroup(
-  state: GridViewState,
-  actions: GridViewActions,
-  colIndex: number,
-): HTMLDivElement {
-  const group = document.createElement('div');
-  const ascClass = getSortButtonClass(state.activeSort, colIndex, 'asc');
-  const descClass = getSortButtonClass(state.activeSort, colIndex, 'desc');
-
-  group.className = 'col-actions';
-  group.append(
-    createUiButton({
-      className: ascClass,
-      label: '▲',
-      onClick: () => actions.onSortColumn(colIndex, 'asc'),
-      title: 'Sort data rows ascending (modifies CSV)',
-    }),
-    createUiButton({
-      className: descClass,
-      label: '▼',
-      onClick: () => actions.onSortColumn(colIndex, 'desc'),
-      title: 'Sort data rows descending (modifies CSV)',
-    }),
-    createUiButton({
-      className: 'icon-btn',
-      label: '×',
-      onClick: () => actions.onRemoveColumn(colIndex),
-      title: 'Delete column',
-    }),
-  );
-
-  return group;
-}
-
-/**
- * Creates a single column control `<th>` with Rainbow accent bar, sort buttons, and column filter.
- */
-function createColumnControlCell(
-  state: GridViewState,
-  actions: GridViewActions,
-  colIndex: number,
-): HTMLTableCellElement {
-  const th = document.createElement('th');
-  const wrapper = document.createElement('div');
-  const color = RAINBOW_COLORS[colIndex % RAINBOW_COLORS.length]!;
-
-  th.style.borderTop = `3px solid ${color}`;
-  wrapper.className = 'col-control-header';
-  wrapper.append(
-    createColumnTitleRow(state, actions, colIndex),
-    createColumnFilterInput(state, actions, colIndex),
-  );
-  th.appendChild(wrapper);
-
-  return th;
-}
-
-/**
- * Creates the top-most `<tr>` inside `<thead>` containing sort and filter controls for each column.
- */
-function createColumnControlRow(
-  state: GridViewState,
-  actions: GridViewActions,
-  colCount: number,
-): HTMLTableRowElement {
-  const tr = document.createElement('tr');
-  const cornerTh = document.createElement('th');
-
-  cornerTh.className = 'gutter-cell';
-  cornerTh.innerHTML = '<div class="row-gutter"><span>Row</span><span>Pin</span></div>';
-  tr.appendChild(cornerTh);
-
-  for (let colIndex = 0; colIndex < colCount; colIndex += 1) {
-    tr.appendChild(createColumnControlCell(state, actions, colIndex));
-  }
-
-  return tr;
-}
-
-/**
- * Creates the per-column filter `<input>` element for `colIndex`.
- */
-function createColumnFilterInput(
-  state: GridViewState,
-  actions: GridViewActions,
-  colIndex: number,
-): HTMLInputElement {
-  const input = document.createElement('input');
-
-  Object.assign(input, {
-    className: 'input-field',
-    placeholder: 'Filter column...',
-    type: 'search',
-    value: state.columnFilters[colIndex] ?? '',
-  });
-  input.addEventListener('input', () => {
-    actions.onColumnFilterChange(colIndex, input.value);
-  });
-
-  return input;
-}
-
-/**
- * Creates the title and sort button row inside a column control header.
- */
-function createColumnTitleRow(
-  state: GridViewState,
-  actions: GridViewActions,
-  colIndex: number,
-): HTMLDivElement {
-  const titleRow = document.createElement('div');
-  const titleSpan = document.createElement('span');
-  const color = RAINBOW_COLORS[colIndex % RAINBOW_COLORS.length]!;
-  const label = buildColumnHeaderLabel(state.model.rows, state.model.headerRowCount, colIndex);
-
-  titleRow.className = 'col-title-row';
-  Object.assign(titleSpan, { className: 'col-title', textContent: label, title: label });
-  titleSpan.style.color = color;
-  titleRow.append(titleSpan, createColumnActionGroup(state, actions, colIndex));
-
-  return titleRow;
 }
 
 /**
@@ -210,18 +134,20 @@ function createColumnTitleRow(
 function createGridRowElement(
   state: GridViewState,
   actions: GridViewActions,
-  rowSpec: { isHeader: boolean; rowIndex: number },
+  rowSpec: { isHeader: boolean; pinnedOffsets: (number | null)[]; rowIndex: number },
 ): HTMLTableRowElement {
   const tr = document.createElement('tr');
   const rowCells = state.model.rows[rowSpec.rowIndex]!;
 
+  tr.className = isSelectedDataRow(state, rowSpec) ? 'ag-row-selected' : '';
   tr.appendChild(createRowGutterCell(actions, rowSpec));
 
   for (let colIndex = 0; colIndex < rowCells.length; colIndex += 1) {
     tr.appendChild(
-      createCellElement(actions, {
+      createCellElement(state, actions, {
         colIndex,
         isHeader: rowSpec.isHeader,
+        pinnedLeftOffset: rowSpec.pinnedOffsets[colIndex]!,
         rowIndex: rowSpec.rowIndex,
         value: rowCells[colIndex]!,
       }),
@@ -240,11 +166,12 @@ function createRowGutterButtons(
 ): HTMLDivElement {
   const btnGroup = document.createElement('div');
   const targetHeaders = rowSpec.isHeader ? rowSpec.rowIndex : rowSpec.rowIndex + 1;
+  const pinClass = rowSpec.isHeader ? 'icon-btn is-active' : 'icon-btn';
 
   btnGroup.className = 'col-actions';
   btnGroup.append(
     createUiButton({
-      className: rowSpec.isHeader ? 'icon-btn is-active' : 'icon-btn',
+      className: pinClass,
       label: '📌',
       onClick: () => actions.onSetHeaderRows(targetHeaders),
       title: getPinButtonTooltip(rowSpec),
@@ -290,35 +217,30 @@ function getPinButtonTooltip(rowSpec: { isHeader: boolean; rowIndex: number }): 
 }
 
 /**
- * Returns the CSS class name for a column sort button (`is-active` when matching `activeSort`).
+ * Returns the column count of the CSV row matrix.
  */
-function getSortButtonClass(
-  activeSort: GridViewState['activeSort'],
-  colIndex: number,
-  direction: CsvSortDirection,
-): string {
-  return isMatchingSort(activeSort, colIndex, direction) ? 'icon-btn is-active' : 'icon-btn';
+function getRowColumnCount(rows: string[][]): number {
+  return rows.at(0)?.length ?? 0;
 }
 
 /**
- * Checks whether `activeSort` matches the given column index and sort direction.
+ * Checks whether a row is a selected non-header data row.
  */
-function isMatchingSort(
-  activeSort: GridViewState['activeSort'],
-  colIndex: number,
-  direction: CsvSortDirection,
+function isSelectedDataRow(
+  state: GridViewState,
+  rowSpec: { isHeader: boolean; rowIndex: number },
 ): boolean {
-  if (activeSort?.colIndex !== colIndex) return false;
+  if (rowSpec.isHeader) return false;
 
-  return activeSort.direction === direction;
+  return state.selectedCell?.rowIndex === rowSpec.rowIndex;
 }
 
 /**
- * Builds the complete interactive CSV Grid DOM tree (`toolbar` + `grid-wrapper`) for `state`.
+ * Builds the complete AG Grid-inspired CSV DOM tree (`toolbar` + `ag-workspace` + `status-bar`).
  *
- * @param state - Current CSV Grid view state including model, sort indicator, and view filters.
+ * @param state - Current CSV Grid view state including model, schema, selection, and filters.
  * @param actions - Callback handlers for user interactions in the grid.
- * @returns DocumentFragment containing the toolbar and scrollable table.
+ * @returns DocumentFragment containing the toolbar, split workspace, and bottom status bar.
  *
  * @example
  * ```ts
@@ -332,13 +254,12 @@ export function renderCsvGridDom(state: GridViewState, actions: GridViewActions)
     globalQuery: state.globalQuery,
     headerRowCount: state.model.headerRowCount,
   });
-  const wrapper = document.createElement('div');
-  const table = document.createElement('table');
 
-  wrapper.className = 'grid-wrapper';
-  table.append(buildTableHead(state, actions), buildTableBody(state, actions, visibleRowIndices));
-  wrapper.appendChild(table);
-  fragment.append(createCsvToolbarElement(state, actions, visibleRowIndices.length), wrapper);
+  fragment.append(
+    createCsvToolbarElement(state, actions, visibleRowIndices.length),
+    buildAgWorkspace(state, actions, visibleRowIndices),
+    createCsvStatusBarElement(state, visibleRowIndices.length),
+  );
 
   return fragment;
 }

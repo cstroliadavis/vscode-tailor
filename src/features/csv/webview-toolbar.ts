@@ -1,12 +1,34 @@
-import type { CsvDocumentModel, CsvSortDirection } from '../../types.ts';
+import type {
+  CsvColumnSchema,
+  CsvDocumentModel,
+  CsvFileSchemaConfig,
+  CsvSortDirection,
+} from '../../types.ts';
+import { resolveColumnSchema } from './csv-column-types.ts';
+import { buildColumnHeaderLabel } from './csv-operations.ts';
 
 /**
- * Creates the right-side toolbar group containing filter controls, row/col actions, and view switch.
+ * Formats the selected cell summary text for the bottom AG Grid status bar.
+ */
+function buildSelectedCellStatusText(state: GridViewState): string {
+  const sel = state.selectedCell;
+
+  if (!sel) return 'Selected: None (click any cell to inspect, double-click to edit)';
+
+  const label = buildColumnHeaderLabel(state.model.rows, state.model.headerRowCount, sel.colIndex);
+  const schema = resolveColumnSchema(state.fileSchema, state.model.rows, sel.colIndex);
+
+  return `Selected: Row ${sel.rowIndex + 1}, ${label} [${schema.dataType}]`;
+}
+
+/**
+ * Creates the right-side toolbar group containing filter controls, drawer toggle, and view switch.
  */
 function createToolbarActionsGroup(state: GridViewState, actions: GridViewActions): HTMLDivElement {
   const group = document.createElement('div');
   const searchInput = createToolbarSearchInput(state.globalQuery, actions);
-  const colCount = state.model.rows.at(0)?.length ?? 0;
+  const colCount = getColumnCount(state.model);
+  const drawerBtnClass = state.inspectorOpen ? 'btn btn-primary' : 'btn';
 
   group.className = 'toolbar-group';
   group.append(
@@ -28,6 +50,12 @@ function createToolbarActionsGroup(state: GridViewState, actions: GridViewAction
       label: '+ Column',
       onClick: () => actions.onInsertColumn(colCount),
       title: 'Append a new column on the right',
+    }),
+    createUiButton({
+      className: drawerBtnClass,
+      label: 'Inspector Drawer',
+      onClick: () => actions.onToggleInspector(),
+      title: 'Toggle the right-side Cell Inspector Drawer',
     }),
     createUiButton({
       className: 'btn btn-primary',
@@ -52,11 +80,7 @@ function createToolbarHeaderGroup(
   const title = createToolbarSpan('strong', state.fileName, '');
   const headerLabel = createToolbarSpan('span', `Header Rows: ${state.model.headerRowCount}`, '');
   const totalDataRows = Math.max(0, state.model.rows.length - state.model.headerRowCount);
-  const countBadge = createToolbarSpan(
-    'span',
-    `(${visibleCount} of ${totalDataRows} data rows shown)`,
-    'badge',
-  );
+  const countBadge = createToolbarSpan('span', `${visibleCount} / ${totalDataRows} rows`, 'badge');
 
   group.className = 'toolbar-group';
   group.append(
@@ -88,7 +112,7 @@ function createToolbarSearchInput(globalQuery: string, actions: GridViewActions)
 
   Object.assign(searchInput, {
     className: 'input-field',
-    placeholder: 'Filter all columns (view only)...',
+    placeholder: 'Quick filter all columns...',
     type: 'search',
     value: globalQuery,
   });
@@ -110,6 +134,43 @@ function createToolbarSpan(
   Object.assign(el, { className, textContent });
 
   return el;
+}
+
+/**
+ * Returns the column count of the CSV document model.
+ */
+function getColumnCount(model: CsvDocumentModel): number {
+  return model.rows.at(0)?.length ?? 0;
+}
+
+/**
+ * Creates the bottom AG Grid-style status bar showing row counts and selected cell metadata.
+ *
+ * @param state - Current CSV Grid view state.
+ * @param visibleCount - Number of visible data rows after filtering.
+ * @returns Configured status bar `HTMLDivElement`.
+ *
+ * @example
+ * ```ts
+ * const statusBar = createCsvStatusBarElement(state, 10);
+ * ```
+ */
+export function createCsvStatusBarElement(
+  state: GridViewState,
+  visibleCount: number,
+): HTMLDivElement {
+  const bar = document.createElement('div');
+  const left = document.createElement('span');
+  const right = document.createElement('span');
+  const totalData = Math.max(0, state.model.rows.length - state.model.headerRowCount);
+  const colCount = state.model.rows.at(0)?.length ?? 0;
+
+  bar.className = 'ag-status-bar';
+  left.textContent = `Data Rows: ${visibleCount} of ${totalData} · Columns: ${colCount} · Sticky Headers: ${state.model.headerRowCount}`;
+  right.textContent = buildSelectedCellStatusText(state);
+  bar.append(left, right);
+
+  return bar;
 }
 
 /**
@@ -171,7 +232,10 @@ export function createUiButton(params: {
     title: params.title,
     type: 'button',
   });
-  btn.addEventListener('click', params.onClick);
+  btn.addEventListener('click', (event) => {
+    event.stopPropagation();
+    params.onClick();
+  });
 
   return btn;
 }
@@ -221,9 +285,19 @@ export interface GridViewActions {
   onRemoveRow(rowIndex: number): void;
 
   /**
+   * Selects a cell at `(rowIndex, colIndex)` and updates the Inspector Drawer.
+   */
+  onSelectCell(rowIndex: number, colIndex: number): void;
+
+  /**
    * Updates the number of top contiguous sticky header rows.
    */
   onSetHeaderRows(headerRowCount: number): void;
+
+  /**
+   * Switches the Inspector Drawer view mode between `'form'` and `'code'`.
+   */
+  onSetInspectorMode(mode: 'code' | 'form'): void;
 
   /**
    * Performs a real sort on data rows below the header block and persists to the CSV document.
@@ -231,9 +305,24 @@ export interface GridViewActions {
   onSortColumn(colIndex: number, direction: CsvSortDirection): void;
 
   /**
+   * Enters or exits inline cell editing mode.
+   */
+  onStartEditingCell(cell: { colIndex: number; rowIndex: number } | null): void;
+
+  /**
    * Switches the active editor from the CSV Grid View to the standard VS Code Text Editor.
    */
   onSwitchToText(): void;
+
+  /**
+   * Toggles the right-side Cell Inspector Drawer open or closed.
+   */
+  onToggleInspector(): void;
+
+  /**
+   * Updates and persists the `CsvColumnSchema` for `colIndex` in `.vscode/settings.json`.
+   */
+  onUpdateColumnSchema(colIndex: number, patch: Partial<CsvColumnSchema>): void;
 }
 
 /**
@@ -251,9 +340,19 @@ export interface GridViewState {
   columnFilters: Record<number, string>;
 
   /**
+   * Coordinates of the cell currently being edited inline in the grid, if any.
+   */
+  editingCell: { colIndex: number; rowIndex: number } | null;
+
+  /**
    * Display name of the active CSV file.
    */
   fileName: string;
+
+  /**
+   * Per-file column schema configuration synced with `.vscode/settings.json`.
+   */
+  fileSchema: CsvFileSchemaConfig;
 
   /**
    * Global view-only search string across all columns.
@@ -261,7 +360,22 @@ export interface GridViewState {
   globalQuery: string;
 
   /**
+   * Active view mode inside the right-side Cell Inspector Drawer (`'form'` or `'code'`).
+   */
+  inspectorMode: 'code' | 'form';
+
+  /**
+   * Whether the right-side Cell Inspector Drawer is currently visible.
+   */
+  inspectorOpen: boolean;
+
+  /**
    * Current parsed CSV document model.
    */
   model: CsvDocumentModel;
+
+  /**
+   * Coordinates of the currently selected cell in the grid, if any.
+   */
+  selectedCell: { colIndex: number; rowIndex: number } | null;
 }

@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import type { CsvDocumentModel } from '../../types.ts';
+import type { CsvDocumentModel, CsvFileSchemaConfig } from '../../types.ts';
 import type {
   CsvExtensionToWebviewMessage,
   CsvMutationMessage,
@@ -7,6 +7,11 @@ import type {
 } from './csv-messages.ts';
 import { applyWebviewMutation } from './csv-messages.ts';
 import { parseCsvDocument, serializeCsvDocument } from './csv-parser.ts';
+import {
+  readFileSchemaConfig,
+  saveColumnSchemaConfig,
+  saveHeaderRowCountConfig,
+} from './csv-schema-store.ts';
 import { buildCsvGridHtml } from './csv-webview-html.ts';
 
 /**
@@ -47,6 +52,26 @@ function extractFileName(uri: vscode.Uri): string {
 }
 
 /**
+ * Dispatches either a column schema persistence message or a CSV document mutation message.
+ */
+async function handleSchemaOrMutationMessage(
+  session: EditorSessionState,
+  message: Exclude<CsvWebviewToExtensionMessage, { type: 'ready' | 'switchToText' }>,
+): Promise<void> {
+  if (message.type === 'updateColumnSchema') {
+    session.fileSchema = await saveColumnSchemaConfig(
+      session.document.uri,
+      message.columnKey,
+      message.schema,
+    );
+
+    return;
+  }
+
+  await processMutationMessage(session, message);
+}
+
+/**
  * Handles a single incoming message from the CSV Grid Webview.
  */
 async function handleWebviewMessage(
@@ -65,11 +90,11 @@ async function handleWebviewMessage(
     return;
   }
 
-  await processMutationMessage(session, message);
+  await handleSchemaOrMutationMessage(session, message);
 }
 
 /**
- * Sends the current parsed `CsvDocumentModel` state to the CSV Grid Webview.
+ * Sends the current parsed `CsvDocumentModel` and `CsvFileSchemaConfig` to the CSV Grid Webview.
  */
 function postDocumentSync(session: EditorSessionState): void {
   const model = parseCsvDocument(session.document.getText(), session.headerRowCount);
@@ -77,6 +102,7 @@ function postDocumentSync(session: EditorSessionState): void {
     type: 'syncDocument',
 
     fileName: extractFileName(session.document.uri),
+    fileSchema: session.fileSchema,
     model,
   };
 
@@ -85,7 +111,7 @@ function postDocumentSync(session: EditorSessionState): void {
 }
 
 /**
- * Applies a webview mutation to the session's CSV model and persists any text change.
+ * Applies a webview mutation to the session's CSV model and persists any text or schema change.
  */
 async function processMutationMessage(
   session: EditorSessionState,
@@ -97,6 +123,10 @@ async function processMutationMessage(
   session.headerRowCount = nextModel.headerRowCount;
 
   if (message.type === 'setHeaderRowCount') {
+    session.fileSchema = await saveHeaderRowCountConfig(
+      session.document.uri,
+      nextModel.headerRowCount,
+    );
     postDocumentSync(session);
 
     return;
@@ -152,9 +182,11 @@ export function createCsvGridEditorProvider(
 ): vscode.CustomTextEditorProvider {
   return {
     resolveCustomTextEditor(document: vscode.TextDocument, webviewPanel: vscode.WebviewPanel) {
+      const initialSchema = readFileSchemaConfig(document.uri, readDefaultHeaderRowCount());
       const session: EditorSessionState = {
         document,
-        headerRowCount: readDefaultHeaderRowCount(),
+        fileSchema: initialSchema,
+        headerRowCount: initialSchema.headerRowCount ?? 1,
         lastAppliedText: null,
         panel: webviewPanel,
       };
@@ -188,6 +220,7 @@ export function createCsvGridEditorProvider(
  */
 interface EditorSessionState {
   document: vscode.TextDocument;
+  fileSchema: CsvFileSchemaConfig;
   headerRowCount: number;
   lastAppliedText: string | null;
   panel: vscode.WebviewPanel;

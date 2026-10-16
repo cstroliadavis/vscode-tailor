@@ -82,4 +82,3 @@ export function createCsvFeatureModule(extensionUri: vscode.Uri): TailorFeatureM
     },
   };
 }
-

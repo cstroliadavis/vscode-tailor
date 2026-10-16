@@ -1,4 +1,9 @@
-import type { CsvDocumentModel, CsvSortDirection } from '../../types.ts';
+import type {
+  CsvColumnSchema,
+  CsvDocumentModel,
+  CsvFileSchemaConfig,
+  CsvSortDirection,
+} from '../../types.ts';
 import {
   editCsvCell,
   insertCsvColumn,
@@ -109,6 +114,11 @@ export interface CsvExtensionToWebviewMessage {
   fileName: string;
 
   /**
+   * Per-file column schema configuration loaded from `.vscode/settings.json`.
+   */
+  fileSchema: CsvFileSchemaConfig;
+
+  /**
    * Structured CSV document model to render in the grid.
    */
   model: CsvDocumentModel;
@@ -158,9 +168,13 @@ export type CsvMutationMessage =
 export type CsvWebviewToExtensionMessage =
   | CsvMutationMessage
   | {
+      columnKey: string;
+      schema: CsvColumnSchema;
+      type: 'updateColumnSchema';
+    }
+  | {
       type: 'ready';
     }
   | {
       type: 'switchToText';
     };
-

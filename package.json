@@ -1,8 +1,8 @@
 {
   "name": "vscode-tailor",
   "displayName": "VS Code Tailor",
-  "description": "Personal, modular VS Code workbench extension with an AG Grid-style CSV Editor, typed column schemas, JSON/JSONL inspector drawer, and Rainbow CSV text highlighting.",
-  "version": "0.2.0",
+  "description": "Personal, modular VS Code workbench extension with an AG Grid-style CSV Editor, Rainbow CSV text highlighting, and an interactive HTTP/REST Client Workbench (.http / .rest).",
+  "version": "0.3.3",
   "publisher": "chris-strolia-davis",
   "license": "MIT",
   "author": "Chris Strolia-Davis <christopher.stroliadavis@gmail.com>",
@@ -12,13 +12,35 @@
   "categories": [
     "Other",
     "Formatters",
-    "Visualization"
+    "Visualization",
+    "Testing"
   ],
   "activationEvents": [
     "onStartupFinished"
   ],
   "main": "./dist/extension.cjs",
   "contributes": {
+    "languages": [
+      {
+        "id": "http",
+        "aliases": [
+          "HTTP",
+          "REST",
+          "http"
+        ],
+        "extensions": [
+          ".http",
+          ".rest"
+        ]
+      }
+    ],
+    "grammars": [
+      {
+        "language": "http",
+        "scopeName": "source.http",
+        "path": "./syntaxes/http.tmLanguage.json"
+      }
+    ],
     "commands": [
       {
         "command": "vscodeTailor.toggleFeatures",
@@ -36,6 +58,42 @@
         "title": "Switch to Grid View",
         "category": "Tailor CSV",
         "icon": "$(table)"
+      },
+      {
+        "command": "vscodeTailor.http.switchToText",
+        "title": "Switch to Text View",
+        "category": "Tailor HTTP",
+        "icon": "$(code)"
+      },
+      {
+        "command": "vscodeTailor.http.switchToGui",
+        "title": "Switch to GUI Workbench",
+        "category": "Tailor HTTP",
+        "icon": "$(globe)"
+      },
+      {
+        "command": "vscodeTailor.http.runSingleRequest",
+        "title": "Run HTTP Request",
+        "category": "Tailor HTTP",
+        "icon": "$(play)"
+      },
+      {
+        "command": "vscodeTailor.http.runAllInFile",
+        "title": "Run All HTTP Requests in File",
+        "category": "Tailor HTTP",
+        "icon": "$(run-all)"
+      },
+      {
+        "command": "vscodeTailor.http.selectEnvironment",
+        "title": "Select HTTP Environment",
+        "category": "Tailor HTTP",
+        "icon": "$(server-environment)"
+      },
+      {
+        "command": "vscodeTailor.http.setSecret",
+        "title": "Set Secret Value (SecretStorage)",
+        "category": "Tailor HTTP",
+        "icon": "$(key)"
       }
     ],
     "customEditors": [
@@ -45,6 +103,19 @@
         "selector": [
           {
             "filenamePattern": "*.csv"
+          }
+        ],
+        "priority": "default"
+      },
+      {
+        "viewType": "vscodeTailor.httpWorkbench",
+        "displayName": "Tailor HTTP Workbench",
+        "selector": [
+          {
+            "filenamePattern": "*.http"
+          },
+          {
+            "filenamePattern": "*.rest"
           }
         ],
         "priority": "default"
@@ -61,6 +132,21 @@
           "command": "vscodeTailor.csv.switchToGrid",
           "when": "resourceExtname == '.csv' && activeCustomEditorId != 'vscodeTailor.csvGrid'",
           "group": "navigation@1"
+        },
+        {
+          "command": "vscodeTailor.http.switchToText",
+          "when": "activeCustomEditorId == 'vscodeTailor.httpWorkbench'",
+          "group": "navigation@1"
+        },
+        {
+          "command": "vscodeTailor.http.switchToGui",
+          "when": "(resourceExtname == '.http' || resourceExtname == '.rest') && activeCustomEditorId != 'vscodeTailor.httpWorkbench'",
+          "group": "navigation@1"
+        },
+        {
+          "command": "vscodeTailor.http.runAllInFile",
+          "when": "resourceExtname == '.http' || resourceExtname == '.rest'",
+          "group": "navigation@2"
         }
       ]
     },
@@ -87,6 +173,16 @@
           "type": "object",
           "default": {},
           "description": "Per-file CSV column schema definitions (data types, number decimals, date formats, pinned state, column widths, and header row counts) keyed by workspace-relative file path."
+        },
+        "vscodeTailor.http.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable the HTTP Client Workbench feature module (.http / .rest GUI Custom Editor, CodeLens runner, and secret resolution)."
+        },
+        "vscodeTailor.http.defaultEnvironment": {
+          "type": "string",
+          "default": "dev",
+          "description": "Default environment name selected from http-client.env.json when opening .http files."
         }
       }
     }
@@ -95,7 +191,7 @@
     "build": "bun run build:clean && bun run build:ext && bun run build:webview",
     "build:clean": "rm -rf dist",
     "build:ext": "bun build ./src/extension.ts --outdir ./dist --entry-naming extension.cjs --target node --format cjs --external vscode --sourcemap=external",
-    "build:webview": "bun build ./src/features/csv/webview-client.ts --outdir ./dist --entry-naming csv-webview.js --target browser --format iife --sourcemap=external",
+    "build:webview": "bun build ./src/features/csv/webview-client.ts --outdir ./dist --entry-naming csv-webview.js --target browser --format iife --sourcemap=external && bun build ./src/features/http/http-webview-client.ts --outdir ./dist --entry-naming http-webview.js --target browser --format iife --sourcemap=external",
     "deploy": "bun run build && bun run scripts/deploy-vsix.ts",
     "format": "bun fmt",
     "format:check": "bun fmt --check",

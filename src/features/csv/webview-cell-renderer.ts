@@ -256,4 +256,3 @@ export interface CellRenderSpec extends CellLayoutSpec {
    */
   schema: CsvColumnSchema;
 }
-

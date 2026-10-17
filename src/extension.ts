@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { createCsvFeatureModule } from './features/csv/index.ts';
+import { createHttpFeatureModule } from './features/http/index.ts';
 import { createFeatureRegistry } from './registry.ts';
 import type { FeatureConfigAdapter, FeatureRegistry } from './types.ts';
 
@@ -80,6 +81,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
   _.registry = registry;
   registry.register(createCsvFeatureModule(context.extensionUri));
+  registry.register(createHttpFeatureModule(context));
   registry.activateAll();
 
   const toggleCommand = vscode.commands.registerCommand('vscodeTailor.toggleFeatures', () =>

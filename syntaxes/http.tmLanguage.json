@@ -1,0 +1,97 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "HTTP",
+  "patterns": [
+    { "include": "#separator" },
+    { "include": "#directive" },
+    { "include": "#comment" },
+    { "include": "#variableDef" },
+    { "include": "#requestLine" },
+    { "include": "#headerLine" },
+    { "include": "#fileRef" },
+    { "include": "#responseScript" },
+    { "include": "#templateVar" }
+  ],
+  "repository": {
+    "comment": {
+      "match": "^\\s*(#|//).*$",
+      "name": "comment.line.http"
+    },
+    "directive": {
+      "captures": {
+        "1": { "name": "punctuation.definition.comment.http" },
+        "2": { "name": "keyword.control.directive.http" },
+        "3": { "name": "string.unquoted.directive-value.http" }
+      },
+      "match": "^\\s*(#|//)\\s*(@[A-Za-z0-9_-]+)\\s*(.*)$",
+      "name": "meta.directive.http"
+    },
+    "fileRef": {
+      "captures": {
+        "1": { "name": "keyword.operator.redirect.http" },
+        "2": { "name": "string.unquoted.filepath.http" }
+      },
+      "match": "^\\s*(<)\\s+(\\S+)\\s*$"
+    },
+    "headerLine": {
+      "captures": {
+        "1": { "name": "entity.name.tag.header.http" },
+        "2": { "name": "punctuation.separator.key-value.http" },
+        "3": {
+          "name": "string.unquoted.header-value.http",
+          "patterns": [{ "include": "#templateVar" }]
+        }
+      },
+      "match": "^([A-Za-z0-9-]+)\\s*(:)\\s*(.*)$"
+    },
+    "requestLine": {
+      "captures": {
+        "1": { "name": "keyword.operator.method.http" },
+        "2": {
+          "name": "markup.underline.link.http",
+          "patterns": [{ "include": "#templateVar" }]
+        },
+        "3": { "name": "constant.language.version.http" }
+      },
+      "match": "^\\s*(GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS|TRACE|CONNECT|PURGE|BAN|PROPFIND|PROPPATCH|MKCOL|COPY|MOVE|LOCK|UNLOCK|LINK|UNLINK|[A-Z][A-Z0-9_-]*)\\s+(\\S+)(?:\\s+(HTTP/[0-9.]+))?\\s*$"
+    },
+    "responseScript": {
+      "begin": "^\\s*>\\s*\\{%",
+      "beginCaptures": {
+        "0": { "name": "keyword.control.script.begin.http" }
+      },
+      "end": "%\\}",
+      "endCaptures": {
+        "0": { "name": "keyword.control.script.end.http" }
+      },
+      "name": "meta.embedded.block.javascript.http",
+      "patterns": [{ "include": "source.js" }]
+    },
+    "separator": {
+      "captures": {
+        "1": { "name": "keyword.control.separator.http" },
+        "2": { "name": "entity.name.section.http" }
+      },
+      "match": "^(###+)\\s*(.*)$",
+      "name": "markup.heading.http"
+    },
+    "templateVar": {
+      "captures": {
+        "0": { "name": "variable.other.template.http" }
+      },
+      "match": "\\{\\{[^}]+\\}\\}"
+    },
+    "variableDef": {
+      "captures": {
+        "1": { "name": "variable.other.constant.http" },
+        "2": { "name": "keyword.operator.assignment.http" },
+        "3": {
+          "name": "string.unquoted.variable-value.http",
+          "patterns": [{ "include": "#templateVar" }]
+        }
+      },
+      "match": "^\\s*(@[A-Za-z0-9_.-]+)\\s*(=)\\s*(.*)$"
+    }
+  },
+  "scopeName": "source.http"
+}

@@ -34,7 +34,7 @@ function buildVsixManifestXml(pkg: PackageManifest): string {
     <Identity Language="en-US" Id="${pkg.name}" Version="${pkg.version}" Publisher="${pkg.publisher}" />
     <DisplayName>${pkg.displayName}</DisplayName>
     <Description xml:space="preserve">${pkg.description}</Description>
-    <Tags>tailor,csv,rainbow-csv,custom-editor</Tags>
+    <Tags>tailor,csv,rainbow-csv,http,rest-client,custom-editor</Tags>
     <Categories>${pkg.categories.join(',')}</Categories>
     <GalleryFlags>Public</GalleryFlags>
     <Properties>
@@ -56,6 +56,21 @@ function buildVsixManifestXml(pkg: PackageManifest): string {
   </Assets>
 </PackageManifest>
 `;
+}
+
+/**
+ * Copies extension assets (`package.json`, `README.md`, `LICENSE`, `dist`, `syntaxes`) into `extDir`.
+ */
+function copyStagedExtensionAssets(rootDir: string, stageDir: string, pkg: PackageManifest): void {
+  const extDir = join(stageDir, 'extension');
+
+  writeFileSync(join(stageDir, '[Content_Types].xml'), buildContentTypesXml(), 'utf8');
+  writeFileSync(join(stageDir, 'extension.vsixmanifest'), buildVsixManifestXml(pkg), 'utf8');
+  cpSync(join(rootDir, 'package.json'), join(extDir, 'package.json'));
+  cpSync(join(rootDir, 'README.md'), join(extDir, 'README.md'));
+  cpSync(join(rootDir, 'LICENSE'), join(extDir, 'LICENSE'));
+  cpSync(join(rootDir, 'dist'), join(extDir, 'dist'), { recursive: true });
+  cpSync(join(rootDir, 'syntaxes'), join(extDir, 'syntaxes'), { recursive: true });
 }
 
 /**
@@ -89,13 +104,7 @@ export async function packageAndDeployVsix(): Promise<void> {
   rmSync(stageDir, { force: true, recursive: true });
   rmSync(vsixPath, { force: true });
   mkdirSync(extDir, { recursive: true });
-
-  writeFileSync(join(stageDir, '[Content_Types].xml'), buildContentTypesXml(), 'utf8');
-  writeFileSync(join(stageDir, 'extension.vsixmanifest'), buildVsixManifestXml(pkg), 'utf8');
-  cpSync(join(rootDir, 'package.json'), join(extDir, 'package.json'));
-  cpSync(join(rootDir, 'README.md'), join(extDir, 'README.md'));
-  cpSync(join(rootDir, 'LICENSE'), join(extDir, 'LICENSE'));
-  cpSync(join(rootDir, 'dist'), join(extDir, 'dist'), { recursive: true });
+  copyStagedExtensionAssets(rootDir, stageDir, pkg);
 
   const zipProc = Bun.spawnSync(['zip', '-r', '-q', vsixPath, '.'], { cwd: stageDir });
 

@@ -63,14 +63,54 @@ Highlighting**, with one-click switching between views and per-file schema persi
   - Colors each CSV column in the standard VS Code Text Editor using a 10-color palette with hover
     tooltips, and provides a one-click `$(code)` / `$(table)` toggle in the Editor Title bar.
 
+### 3. HTTP Client Workbench (`http` — `.http` / `.rest` GUI Custom Editor + Runner)
+
+Provides a hybrid **Postman/Insomnia-style GUI Custom Editor** and **JetBrains-compatible `.http` /
+`.rest` Text Editor & Runner**, with bidirectional synchronization and multi-source secret
+resolution:
+
+- **Default GUI Workbench (`vscodeTailor.httpWorkbench`) & Seamless Text Toggle**:
+  - Opening any `*.http` or `*.rest` file opens the three-pane GUI Workbench by default (Request
+    Collection Sidebar, Center Request Inspector, and Right Response & Test Results Viewer), with a
+    one-click `Switch to Text` / `Switch to GUI Workbench` toggle.
+  - **Unfiltered Editable Method Combo-Box**: Click the `▾` dropdown or focus the method input to
+    pick from the full unfiltered list of standard (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `HEAD`,
+    `OPTIONS`, `TRACE`, `CONNECT`) and extended CDN/WebDAV verbs (`PURGE`, `BAN`, `PROPFIND`,
+    `PROPPATCH`, `MKCOL`, `COPY`, `MOVE`, `LOCK`, `UNLOCK`, `LINK`, `UNLINK`), or type any custom
+    HTTP method directly.
+  - **Editable Header Name & Value Combo-Boxes**: Suggests common HTTP request headers (`Accept`,
+    `Authorization`, `Cache-Control`, `Content-Type`, etc.) and context-aware header values while
+    allowing arbitrary header names, values, and `{{variable}}` placeholders.
+  - **Request Inspector Sub-Tabs (`Variables | Params | Headers | Cookies | Auth | Body | Tests`)**:
+    - **`Variables`**: Editable key/value table for in-file `@variable = value` declarations.
+    - **`Params`**: Decomposes URL query parameters (`?a=1&b={{var}}`) into an editable key/value
+      table without URL-encoding `{{...}}` template placeholders.
+    - **`Headers` & `Cookies`**: Editable key/value tables with automatic `Cookie:` header
+      decomposition and session `Set-Cookie` capture (`CookieJar`).
+    - **`Auth`**: Supports `none`, `bearer`, `basic`, and `apiKey` (in `header` or `query`),
+      bidirectionally synchronized with request headers and query parameters.
+    - **`Body`**: Raw payload editor with one-click `Format JSON` and `< ./path/to/payload.json`
+      external file reference support.
+    - **`Tests`**: Visual `# @assert <target> <op> <expected>` declarative assertion builder plus a
+      JetBrains-compatible `> {% ... %}` response handler script editor (`client.test`,
+      `client.assert`, `client.global.set/get`, `response`).
+- **Multi-Source Variable & Secret Resolution**:
+  - Resolves variables across `client.global`, in-file `@variables`, `.env` / `.env.local`, and
+    JetBrains `http-client.env.json` / `http-client.private.env.json` (including `$shared` defaults).
+  - Supports macOS Keychain (`{{$keychain service account}}`), VS Code `SecretStorage`
+    (`{{$secret key}}`), and dynamic built-ins (`{{$uuid}}`, `{{$timestamp}}`, `{{$isoTimestamp}}`,
+    `{{$randomInt [min] [max]}}`, `{{$processEnv VAR}}`).
+
 ## Configuration Settings
 
-| Setting                              | Type      | Default | Description                                                                            |
-| :----------------------------------- | :-------- | :------ | :------------------------------------------------------------------------------------- |
-| `vscodeTailor.csv.enabled`           | `boolean` | `true`  | Enable the CSV Workbench module (Grid View + Rainbow CSV Text Decorator).              |
-| `vscodeTailor.csv.rainbowEnabled`    | `boolean` | `true`  | Enable Rainbow CSV column highlighting and hover tooltips in the Text Editor.          |
-| `vscodeTailor.csv.defaultHeaderRows` | `number`  | `1`     | Default number of top contiguous rows pinned as sticky headers in Grid View.           |
-| `vscodeTailor.csv.schemas`           | `object`  | `{}`    | Per-file CSV column schemas (`dataType`, `decimals`, `dateFormat`, `pinned`, `width`). |
+| Setting                                | Type      | Default | Description                                                                            |
+| :------------------------------------- | :-------- | :------ | :------------------------------------------------------------------------------------- |
+| `vscodeTailor.csv.enabled`             | `boolean` | `true`  | Enable the CSV Workbench module (Grid View + Rainbow CSV Text Decorator).              |
+| `vscodeTailor.csv.rainbowEnabled`      | `boolean` | `true`  | Enable Rainbow CSV column highlighting and hover tooltips in the Text Editor.          |
+| `vscodeTailor.csv.defaultHeaderRows`   | `number`  | `1`     | Default number of top contiguous rows pinned as sticky headers in Grid View.           |
+| `vscodeTailor.csv.schemas`             | `object`  | `{}`    | Per-file CSV column schemas (`dataType`, `decimals`, `dateFormat`, `pinned`, `width`). |
+| `vscodeTailor.http.enabled`            | `boolean` | `true`  | Enable the HTTP Client Workbench module (`.http`/`.rest` GUI, CodeLens, and secrets).  |
+| `vscodeTailor.http.defaultEnvironment` | `string`  | `"dev"` | Default environment name selected from `http-client.env.json` when opening `.http`.    |
 
 ## Development & Local Installation
 

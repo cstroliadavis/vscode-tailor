@@ -1,9 +1,27 @@
 # VS Code Tailor (`vscode-tailor`)
 
-A personal, modular VS Code workbench extension built with TypeScript and Bun. Instead of
-installing dozens of untrusted third-party extensions with unnecessary bloat, `vscode-tailor`
-consolidates custom workbench enhancements into a single self-owned repository managed by a
-central feature registry and paired with an autonomous Agent Skill.
+A personal, modular VS Code workbench extension built with TypeScript and Bun.
+
+## Why This Exists
+
+If you stumbled across this repository, you should probably know up front that the repo itself
+isn't really as important as what I'm doing with it, and I'm not really expecting anyone else to
+use it as is.
+
+VS Code Tailor is basically just a personal project intended for me. When I find existing VS Code
+plugins with functionality that I like, I generally have AI vibe code that functionality as a
+feature into this plugin instead. That way, I can focus on the parts of the target plugin I'm
+actually interested in without keeping all the bloat that I don't care about. And if there are
+special features I'd like to include as part of that add-in, I just build them right in.
+
+This keeps things clean and under my control. It reduces bloat and cuts down on the friction that
+can happen when multiple plugins try to do similar things.
+
+Over time, I expect I'll start adding a lot more features, along with dedicated Agents and Agent
+Skills that understand how to do this well. Eventually, I may also keep other branches or tagged
+versions of this with specific tools for specific types of projects that I can easily share with a
+team, or drop into a containerized VS Code instance so the environment is already tailored to the
+work at hand.
 
 ## Features
 

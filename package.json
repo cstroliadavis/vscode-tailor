@@ -1,8 +1,8 @@
 {
   "name": "vscode-tailor",
   "displayName": "VS Code Tailor",
-  "description": "Personal, modular VS Code workbench extension with an AG Grid-style CSV Editor, Rainbow CSV text highlighting, and an interactive HTTP/REST Client Workbench (.http / .rest).",
-  "version": "0.3.3",
+  "description": "Personal, modular VS Code workbench extension with an AG Grid-style CSV Editor, Rainbow CSV text highlighting, an interactive HTTP/REST Client Workbench (.http / .rest), and context-menu Text/HTTP Utilities.",
+  "version": "0.4.1",
   "publisher": "chris-strolia-davis",
   "license": "MIT",
   "author": "Chris Strolia-Davis <christopher.stroliadavis@gmail.com>",
@@ -94,6 +94,107 @@
         "title": "Set Secret Value (SecretStorage)",
         "category": "Tailor HTTP",
         "icon": "$(key)"
+      },
+      {
+        "command": "vscodeTailor.utils.sortSmart",
+        "title": "Smart Sort (Array / Object / Params / List)",
+        "category": "Tailor Utils"
+      },
+      {
+        "command": "vscodeTailor.utils.sortLinesAsc",
+        "title": "Sort Rows Ascending",
+        "category": "Tailor Utils"
+      },
+      {
+        "command": "vscodeTailor.utils.sortLinesDesc",
+        "title": "Sort Rows Descending",
+        "category": "Tailor Utils"
+      },
+      {
+        "command": "vscodeTailor.utils.sortImports",
+        "title": "Sort Imports",
+        "category": "Tailor Utils"
+      },
+      {
+        "command": "vscodeTailor.utils.base64Toggle",
+        "title": "Base64 Encode / Decode",
+        "category": "Tailor Utils"
+      },
+      {
+        "command": "vscodeTailor.utils.urlToggle",
+        "title": "URL Encode / Decode",
+        "category": "Tailor Utils"
+      },
+      {
+        "command": "vscodeTailor.utils.htmlToggle",
+        "title": "HTML Encode / Decode",
+        "category": "Tailor Utils"
+      },
+      {
+        "command": "vscodeTailor.utils.httpToCurl",
+        "title": "Convert to cURL",
+        "category": "Tailor Utils"
+      },
+      {
+        "command": "vscodeTailor.utils.httpToFetch",
+        "title": "Convert to fetch()",
+        "category": "Tailor Utils"
+      },
+      {
+        "command": "vscodeTailor.utils.httpToHttpFile",
+        "title": "Convert to .http Request",
+        "category": "Tailor Utils"
+      },
+      {
+        "command": "vscodeTailor.utils.caseSnake",
+        "title": "Case: snake_case",
+        "category": "Tailor Utils"
+      },
+      {
+        "command": "vscodeTailor.utils.caseUpperSnake",
+        "title": "Case: UPPER_SNAKE_CASE",
+        "category": "Tailor Utils"
+      },
+      {
+        "command": "vscodeTailor.utils.caseKebab",
+        "title": "Case: kebab-case",
+        "category": "Tailor Utils"
+      },
+      {
+        "command": "vscodeTailor.utils.caseUpperKebab",
+        "title": "Case: UPPER-KEBAB-CASE",
+        "category": "Tailor Utils"
+      },
+      {
+        "command": "vscodeTailor.utils.casePascal",
+        "title": "Case: PascalCase",
+        "category": "Tailor Utils"
+      },
+      {
+        "command": "vscodeTailor.utils.caseCamel",
+        "title": "Case: camelCase",
+        "category": "Tailor Utils"
+      },
+      {
+        "command": "vscodeTailor.utils.caseTitle",
+        "title": "Case: Title Case",
+        "category": "Tailor Utils"
+      },
+      {
+        "command": "vscodeTailor.utils.caseUpper",
+        "title": "Case: UPPER CASE",
+        "category": "Tailor Utils"
+      },
+      {
+        "command": "vscodeTailor.utils.caseLower",
+        "title": "Case: lower case",
+        "category": "Tailor Utils"
+      }
+    ],
+    "submenus": [
+      {
+        "id": "vscodeTailor.utilsMenu",
+        "label": "Utils"
       }
     ],
     "customEditors": [
@@ -148,6 +249,110 @@
           "when": "resourceExtname == '.http' || resourceExtname == '.rest'",
           "group": "navigation@2"
         }
+      ],
+      "editor/context": [
+        {
+          "submenu": "vscodeTailor.utilsMenu",
+          "when": "editorTextFocus && config.vscodeTailor.utils.enabled",
+          "group": "1_modification@10"
+        }
+      ],
+      "vscodeTailor.utilsMenu": [
+        {
+          "command": "vscodeTailor.utils.sortSmart",
+          "when": "config.vscodeTailor.utils.sort.enabled",
+          "group": "1_sort@1"
+        },
+        {
+          "command": "vscodeTailor.utils.sortLinesAsc",
+          "when": "config.vscodeTailor.utils.sort.enabled",
+          "group": "1_sort@2"
+        },
+        {
+          "command": "vscodeTailor.utils.sortLinesDesc",
+          "when": "config.vscodeTailor.utils.sort.enabled",
+          "group": "1_sort@3"
+        },
+        {
+          "command": "vscodeTailor.utils.sortImports",
+          "when": "config.vscodeTailor.utils.sort.enabled",
+          "group": "1_sort@4"
+        },
+        {
+          "command": "vscodeTailor.utils.base64Toggle",
+          "when": "config.vscodeTailor.utils.encode.enabled",
+          "group": "2_encode@1"
+        },
+        {
+          "command": "vscodeTailor.utils.urlToggle",
+          "when": "config.vscodeTailor.utils.encode.enabled",
+          "group": "2_encode@2"
+        },
+        {
+          "command": "vscodeTailor.utils.htmlToggle",
+          "when": "config.vscodeTailor.utils.encode.enabled",
+          "group": "2_encode@3"
+        },
+        {
+          "command": "vscodeTailor.utils.httpToCurl",
+          "when": "config.vscodeTailor.utils.http.enabled",
+          "group": "3_http@1"
+        },
+        {
+          "command": "vscodeTailor.utils.httpToFetch",
+          "when": "config.vscodeTailor.utils.http.enabled",
+          "group": "3_http@2"
+        },
+        {
+          "command": "vscodeTailor.utils.httpToHttpFile",
+          "when": "config.vscodeTailor.utils.http.enabled",
+          "group": "3_http@3"
+        },
+        {
+          "command": "vscodeTailor.utils.caseSnake",
+          "when": "config.vscodeTailor.utils.case.enabled",
+          "group": "4_case@1"
+        },
+        {
+          "command": "vscodeTailor.utils.caseUpperSnake",
+          "when": "config.vscodeTailor.utils.case.enabled",
+          "group": "4_case@2"
+        },
+        {
+          "command": "vscodeTailor.utils.caseKebab",
+          "when": "config.vscodeTailor.utils.case.enabled",
+          "group": "4_case@3"
+        },
+        {
+          "command": "vscodeTailor.utils.caseUpperKebab",
+          "when": "config.vscodeTailor.utils.case.enabled",
+          "group": "4_case@4"
+        },
+        {
+          "command": "vscodeTailor.utils.casePascal",
+          "when": "config.vscodeTailor.utils.case.enabled",
+          "group": "4_case@5"
+        },
+        {
+          "command": "vscodeTailor.utils.caseCamel",
+          "when": "config.vscodeTailor.utils.case.enabled",
+          "group": "4_case@6"
+        },
+        {
+          "command": "vscodeTailor.utils.caseTitle",
+          "when": "config.vscodeTailor.utils.case.enabled",
+          "group": "4_case@7"
+        },
+        {
+          "command": "vscodeTailor.utils.caseUpper",
+          "when": "config.vscodeTailor.utils.case.enabled",
+          "group": "4_case@8"
+        },
+        {
+          "command": "vscodeTailor.utils.caseLower",
+          "when": "config.vscodeTailor.utils.case.enabled",
+          "group": "4_case@9"
+        }
       ]
     },
     "configuration": {
@@ -183,6 +388,31 @@
           "type": "string",
           "default": "dev",
           "description": "Default environment name selected from http-client.env.json when opening .http files."
+        },
+        "vscodeTailor.utils.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable the Text & HTTP Utilities feature module and the editor right-click 'Utils' context menu."
+        },
+        "vscodeTailor.utils.sort.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show sorting commands (Smart Sort, Sort Rows, Sort Imports) in the Utils context menu."
+        },
+        "vscodeTailor.utils.encode.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show Base64, URL, and HTML encode/decode toggle commands in the Utils context menu."
+        },
+        "vscodeTailor.utils.http.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show HTTP conversion commands (To cURL, To fetch(), To .http) in the Utils context menu."
+        },
+        "vscodeTailor.utils.case.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show case conversion commands (snake_case, UPPER_SNAKE, kebab-case, UPPER-KEBAB, etc.) in the Utils context menu."
         }
       }
     }

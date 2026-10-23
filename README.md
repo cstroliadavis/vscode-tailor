@@ -119,6 +119,29 @@ resolution:
     (`{{$secret key}}`), and dynamic built-ins (`{{$uuid}}`, `{{$timestamp}}`, `{{$isoTimestamp}}`,
     `{{$randomInt [min] [max]}}`, `{{$processEnv VAR}}`).
 
+### 4. Text & HTTP Utilities (`utils` — Editor `Utils` Context Menu)
+
+Provides an editor right-click **`Utils`** context submenu (plus keybindable `Tailor Utils` commands)
+that operates on the active selection or falls back to the current line/word:
+
+- **Sorting (`vscodeTailor.utils.sort.enabled`)**:
+  - **Smart Sort (`vscodeTailor.utils.sortSmart`)**: Sorts inline or multiline array literals
+    (`[...]`), object literals by key (`{...}`), parameter lists (`(...)`), comma-separated lists,
+    or rows while ignoring commas inside nested calls or string literals.
+  - **Sort Rows Ascending / Descending & Sort Imports**: Convenience entries delegating to VS Code's
+    native line and import sorters.
+- **Encoding (`vscodeTailor.utils.encode.enabled`)**:
+  - Auto-detects whether the selection is already encoded (decodes if so, encodes otherwise):
+    - **Base64 Encode / Decode** (`vscodeTailor.utils.base64Toggle`)
+    - **URL Encode / Decode** (`vscodeTailor.utils.urlToggle`)
+    - **HTML Encode / Decode** (`vscodeTailor.utils.htmlToggle`)
+- **HTTP Snippet Conversion (`vscodeTailor.utils.http.enabled`)**:
+  - Auto-detects whether the selected snippet is `cURL`, `fetch()`, or `.http` and converts to the
+    target via **Convert to cURL**, **Convert to fetch()**, or **Convert to .http Request**.
+- **Case Conversion (`vscodeTailor.utils.case.enabled`)**:
+  - Includes `snake_case`, `UPPER_SNAKE_CASE`, `kebab-case`, `UPPER-KEBAB-CASE`, `PascalCase`,
+    `camelCase`, `Title Case`, `UPPER CASE`, and `lower case`.
+
 ## Configuration Settings
 
 | Setting                                | Type      | Default | Description                                                                            |
@@ -129,6 +152,11 @@ resolution:
 | `vscodeTailor.csv.schemas`             | `object`  | `{}`    | Per-file CSV column schemas (`dataType`, `decimals`, `dateFormat`, `pinned`, `width`). |
 | `vscodeTailor.http.enabled`            | `boolean` | `true`  | Enable the HTTP Client Workbench module (`.http`/`.rest` GUI, CodeLens, and secrets).  |
 | `vscodeTailor.http.defaultEnvironment` | `string`  | `"dev"` | Default environment name selected from `http-client.env.json` when opening `.http`.    |
+| `vscodeTailor.utils.enabled`           | `boolean` | `true`  | Enable the Text & HTTP Utilities module and editor right-click `Utils` context menu.   |
+| `vscodeTailor.utils.sort.enabled`      | `boolean` | `true`  | Show sorting commands in the `Utils` context menu.                                     |
+| `vscodeTailor.utils.encode.enabled`    | `boolean` | `true`  | Show Base64, URL, and HTML encode/decode toggle commands in the `Utils` context menu.  |
+| `vscodeTailor.utils.http.enabled`      | `boolean` | `true`  | Show HTTP conversion commands (`cURL` / `fetch()` / `.http`) in the `Utils` menu.      |
+| `vscodeTailor.utils.case.enabled`      | `boolean` | `true`  | Show case conversion commands in the `Utils` context menu.                             |
 
 ## Development & Local Installation
 

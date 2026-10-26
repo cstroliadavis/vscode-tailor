@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { createCsvFeatureModule } from './features/csv/index.ts';
 import { createHttpFeatureModule } from './features/http/index.ts';
+import { createSyntaxFeatureModule } from './features/syntax/index.ts';
 import { createUtilsFeatureModule } from './features/utils/index.ts';
 import { createFeatureRegistry } from './registry.ts';
 import type { FeatureConfigAdapter, FeatureRegistry } from './types.ts';
@@ -39,6 +40,19 @@ function createVscodeConfigAdapter(): FeatureConfigAdapter {
         .update(settingKey, enabled, vscode.ConfigurationTarget.Global);
     },
   };
+}
+
+/**
+ * Registers all built-in Tailor feature modules with the central feature registry.
+ */
+function registerBuiltInFeatures(
+  registry: FeatureRegistry,
+  context: vscode.ExtensionContext,
+): void {
+  registry.register(createCsvFeatureModule(context.extensionUri));
+  registry.register(createHttpFeatureModule(context));
+  registry.register(createSyntaxFeatureModule());
+  registry.register(createUtilsFeatureModule());
 }
 
 /**
@@ -81,9 +95,7 @@ export function activate(context: vscode.ExtensionContext): void {
   const registry = createFeatureRegistry(configAdapter);
 
   _.registry = registry;
-  registry.register(createCsvFeatureModule(context.extensionUri));
-  registry.register(createHttpFeatureModule(context));
-  registry.register(createUtilsFeatureModule());
+  registerBuiltInFeatures(registry, context);
   registry.activateAll();
 
   const toggleCommand = vscode.commands.registerCommand('vscodeTailor.toggleFeatures', () =>

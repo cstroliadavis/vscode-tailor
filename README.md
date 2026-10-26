@@ -142,6 +142,28 @@ that operates on the active selection or falls back to the current line/word:
   - Includes `snake_case`, `UPPER_SNAKE_CASE`, `kebab-case`, `UPPER-KEBAB-CASE`, `PascalCase`,
     `camelCase`, `Title Case`, `UPPER CASE`, and `lower case`.
 
+### 5. Config Syntax Highlighting (`syntax` — TOML, JSON/JSONC/JSONL, and YAML)
+
+Provides both **TextMate language grammars & bracket/comment configurations** and a toggleable
+**Config Syntax Highlighting** decorator & language-upgrade module:
+
+- **TOML (`.toml`, `.tml`)**:
+  - Highlights `[table]` and `[[array_of_tables]]` headers, bare/dotted/quoted keys, basic and
+    literal single/multiline strings, RFC 3339 timestamps/dates, hex/octal/binary/float/integer
+    numbers, booleans, and `#` comments.
+- **JSON, JSONC & JSONL (`.json`, `.jsonc`, `.jsonl`, `.ndjson`)**:
+  - Highlights object keys, strings with escape sequences, numbers, booleans, `null`, and `//` /
+    `/* ... */` comments.
+- **YAML (`.yaml`, `.yml`)**:
+  - Highlights `---` / `...` document markers, `%YAML` directives, block and flow mapping keys,
+    `&anchors`, `*aliases`, `!tags`, quoted and unquoted strings, block scalars (`|`, `>`), ISO
+    dates, numbers, booleans, `null` / `~`, and `#` comments.
+- **Automatic Language Detection & Configurable `fileAssociations`**:
+  - Automatically upgrades `.toml` / `.tml`, `.json` / `.jsonc` / `.jsonl` / `.ndjson`, and `.yaml`
+    / `.yml` files opened as `plaintext` or `LANGUAGE_UNSPECIFIED` to their proper language mode.
+  - Files without standard extensions (such as `Cargo.lock`, `.prettierrc`, or `.yamllint`) can be
+    mapped in `settings.json` via `vscodeTailor.syntax.fileAssociations`.
+
 ## Configuration Settings
 
 | Setting                                | Type      | Default | Description                                                                            |
@@ -152,6 +174,11 @@ that operates on the active selection or falls back to the current line/word:
 | `vscodeTailor.csv.schemas`             | `object`  | `{}`    | Per-file CSV column schemas (`dataType`, `decimals`, `dateFormat`, `pinned`, `width`). |
 | `vscodeTailor.http.enabled`            | `boolean` | `true`  | Enable the HTTP Client Workbench module (`.http`/`.rest` GUI, CodeLens, and secrets).  |
 | `vscodeTailor.http.defaultEnvironment` | `string`  | `"dev"` | Default environment name selected from `http-client.env.json` when opening `.http`.    |
+| `vscodeTailor.syntax.enabled`          | `boolean` | `true`  | Enable Config Syntax Highlighting for TOML, JSON/JSONC/JSONL, and YAML files.          |
+| `vscodeTailor.syntax.toml.enabled`     | `boolean` | `true`  | Enable TOML syntax highlighting and automatic language detection.                      |
+| `vscodeTailor.syntax.json.enabled`     | `boolean` | `true`  | Enable JSON, JSONC, and JSONL syntax highlighting and automatic language detection.    |
+| `vscodeTailor.syntax.yaml.enabled`     | `boolean` | `true`  | Enable YAML syntax highlighting and automatic language detection.                      |
+| `vscodeTailor.syntax.fileAssociations` | `object`  | `{}`    | Map non-standard filenames/extensions (e.g. `Cargo.lock`) to `toml`/`yaml`/`json`.     |
 | `vscodeTailor.utils.enabled`           | `boolean` | `true`  | Enable the Text & HTTP Utilities module and editor right-click `Utils` context menu.   |
 | `vscodeTailor.utils.sort.enabled`      | `boolean` | `true`  | Show sorting commands in the `Utils` context menu.                                     |
 | `vscodeTailor.utils.encode.enabled`    | `boolean` | `true`  | Show Base64, URL, and HTML encode/decode toggle commands in the `Utils` context menu.  |

@@ -1,0 +1,121 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "YAML",
+  "patterns": [
+    { "include": "#comment" },
+    { "include": "#documentSeparator" },
+    { "include": "#directive" },
+    { "include": "#mappingKey" },
+    { "include": "#sequenceMarker" },
+    { "include": "#anchorAndAlias" },
+    { "include": "#tag" },
+    { "include": "#blockScalar" },
+    { "include": "#string" },
+    { "include": "#datetime" },
+    { "include": "#boolean" },
+    { "include": "#null" },
+    { "include": "#number" },
+    { "include": "#punctuation" }
+  ],
+  "repository": {
+    "anchorAndAlias": {
+      "captures": {
+        "1": { "name": "punctuation.definition.anchor.yaml" },
+        "2": { "name": "entity.name.type.anchor.yaml" }
+      },
+      "match": "([&*])([A-Za-z0-9_.-]+)",
+      "name": "meta.anchor.yaml"
+    },
+    "blockScalar": {
+      "match": "(?<=:\\s+|\\-\\s+)[|>][+-]?\\d*\\s*(?=#|$)",
+      "name": "keyword.control.flow.block-scalar.yaml"
+    },
+    "boolean": {
+      "match": "(?<![\\w.-])(?:true|false|True|False|TRUE|FALSE|yes|no|Yes|No|YES|NO|on|off|On|Off|ON|OFF)(?![\\w.-])",
+      "name": "constant.language.boolean.yaml"
+    },
+    "comment": {
+      "match": "(?:^|(?<=\\s))(#.*)$",
+      "name": "comment.line.number-sign.yaml"
+    },
+    "datetime": {
+      "match": "\\b\\d{4}-\\d{2}-\\d{2}(?:[Tt ]\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:\\s*[Zz]|[+-]\\d{2}:\\d{2})?)?\\b",
+      "name": "constant.other.timestamp.yaml"
+    },
+    "directive": {
+      "match": "^%(?:YAML|TAG)\\b.*$",
+      "name": "keyword.other.directive.yaml"
+    },
+    "documentSeparator": {
+      "match": "^(?:---|\\.\\.\\.)(?=\\s|$)",
+      "name": "entity.other.document.begin.yaml"
+    },
+    "mappingKey": {
+      "captures": {
+        "1": { "name": "punctuation.definition.block.sequence.item.yaml" },
+        "2": { "name": "entity.name.tag.yaml" },
+        "3": { "name": "punctuation.separator.key-value.mapping.yaml" }
+      },
+      "match": "^\\s*(?:(-)\\s+)?((?:\"[^\"]*\"|'[^']*'|<<|[A-Za-z0-9_./@-][A-Za-z0-9_./ @-]*?))\\s*(:)(?=\\s|$)"
+    },
+    "null": {
+      "match": "(?<![\\w.-])(?:null|Null|NULL|~)(?![\\w.-])",
+      "name": "constant.language.null.yaml"
+    },
+    "number": {
+      "match": "(?<![\\w.-])(?:0x[0-9A-Fa-f]+|0o[0-7]+|[+-]?(?:\\.inf|\\.Inf|\\.INF|\\.nan|\\.NaN|\\.NAN)|[+-]?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?)(?![\\w.-])",
+      "name": "constant.numeric.yaml"
+    },
+    "punctuation": {
+      "match": "[\\[\\]\\{\\},]",
+      "name": "punctuation.separator.yaml"
+    },
+    "sequenceMarker": {
+      "match": "^\\s*(-)(?=\\s|$)",
+      "name": "punctuation.definition.block.sequence.item.yaml"
+    },
+    "string": {
+      "patterns": [
+        {
+          "begin": "\"",
+          "beginCaptures": {
+            "0": { "name": "punctuation.definition.string.begin.yaml" }
+          },
+          "end": "\"",
+          "endCaptures": {
+            "0": { "name": "punctuation.definition.string.end.yaml" }
+          },
+          "name": "string.quoted.double.yaml",
+          "patterns": [
+            {
+              "match": "\\\\(?:[0abtnvfre \"\\\\/N_LP]|x[0-9A-Fa-f]{2}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})",
+              "name": "constant.character.escape.yaml"
+            }
+          ]
+        },
+        {
+          "begin": "'",
+          "beginCaptures": {
+            "0": { "name": "punctuation.definition.string.begin.yaml" }
+          },
+          "end": "'",
+          "endCaptures": {
+            "0": { "name": "punctuation.definition.string.end.yaml" }
+          },
+          "name": "string.quoted.single.yaml",
+          "patterns": [
+            {
+              "match": "''",
+              "name": "constant.character.escape.yaml"
+            }
+          ]
+        }
+      ]
+    },
+    "tag": {
+      "match": "!(?:![A-Za-z0-9_-]+|<[^>]+>|[A-Za-z0-9_/-]+)",
+      "name": "storage.type.tag-handle.yaml"
+    }
+  },
+  "scopeName": "source.yaml"
+}

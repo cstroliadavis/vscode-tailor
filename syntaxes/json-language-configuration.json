@@ -1,0 +1,23 @@
+{
+  "autoClosingPairs": [
+    { "close": "}", "notIn": ["string"], "open": "{" },
+    { "close": "]", "notIn": ["string"], "open": "[" },
+    { "close": "\"", "notIn": ["string"], "open": "\"" }
+  ],
+  "brackets": [
+    ["{", "}"],
+    ["[", "]"]
+  ],
+  "comments": {
+    "blockComment": ["/*", "*/"],
+    "lineComment": "//"
+  },
+  "folding": {
+    "offSide": false
+  },
+  "surroundingPairs": [
+    ["{", "}"],
+    ["[", "]"],
+    ["\"", "\""]
+  ]
+}

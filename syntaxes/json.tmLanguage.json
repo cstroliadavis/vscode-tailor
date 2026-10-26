@@ -1,0 +1,105 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "JSON",
+  "patterns": [{ "include": "#comment" }, { "include": "#value" }],
+  "repository": {
+    "array": {
+      "begin": "\\[",
+      "beginCaptures": {
+        "0": { "name": "punctuation.definition.array.begin.json" }
+      },
+      "end": "\\]",
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.array.end.json" }
+      },
+      "name": "meta.structure.array.json",
+      "patterns": [
+        { "include": "#comment" },
+        { "include": "#value" },
+        {
+          "match": ",",
+          "name": "punctuation.separator.array.json"
+        }
+      ]
+    },
+    "comment": {
+      "patterns": [
+        {
+          "match": "//.*$",
+          "name": "comment.line.double-slash.json"
+        },
+        {
+          "begin": "/\\*",
+          "end": "\\*/",
+          "name": "comment.block.json"
+        }
+      ]
+    },
+    "constant": {
+      "match": "\\b(?:true|false|null)\\b",
+      "name": "constant.language.json"
+    },
+    "number": {
+      "match": "-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?",
+      "name": "constant.numeric.json"
+    },
+    "object": {
+      "begin": "\\{",
+      "beginCaptures": {
+        "0": { "name": "punctuation.definition.dictionary.begin.json" }
+      },
+      "end": "\\}",
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.dictionary.end.json" }
+      },
+      "name": "meta.structure.dictionary.json",
+      "patterns": [
+        { "include": "#comment" },
+        { "include": "#objectKey" },
+        {
+          "match": ":",
+          "name": "punctuation.separator.dictionary.key-value.json"
+        },
+        { "include": "#value" },
+        {
+          "match": ",",
+          "name": "punctuation.separator.dictionary.pair.json"
+        }
+      ]
+    },
+    "objectKey": {
+      "captures": {
+        "1": { "name": "support.type.property-name.json" }
+      },
+      "match": "(\"(?:\\\\.|[^\"\\\\])*\")\\s*(?=:)"
+    },
+    "string": {
+      "begin": "\"",
+      "beginCaptures": {
+        "0": { "name": "punctuation.definition.string.begin.json" }
+      },
+      "end": "\"",
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.string.end.json" }
+      },
+      "name": "string.quoted.double.json",
+      "patterns": [
+        {
+          "match": "\\\\(?:[\"\\\\/bfnrt]|u[0-9A-Fa-f]{4})",
+          "name": "constant.character.escape.json"
+        }
+      ]
+    },
+    "value": {
+      "patterns": [
+        { "include": "#comment" },
+        { "include": "#object" },
+        { "include": "#array" },
+        { "include": "#string" },
+        { "include": "#number" },
+        { "include": "#constant" }
+      ]
+    }
+  },
+  "scopeName": "source.json"
+}

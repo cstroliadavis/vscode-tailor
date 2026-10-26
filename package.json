@@ -1,8 +1,8 @@
 {
   "name": "vscode-tailor",
   "displayName": "VS Code Tailor",
-  "description": "Personal, modular VS Code workbench extension with an AG Grid-style CSV Editor, Rainbow CSV text highlighting, an interactive HTTP/REST Client Workbench (.http / .rest), and context-menu Text/HTTP Utilities.",
-  "version": "0.4.1",
+  "description": "Personal, modular VS Code workbench extension with an AG Grid-style CSV Editor, Rainbow CSV text highlighting, an interactive HTTP/REST Client Workbench (.http / .rest), TOML/JSON/YAML syntax highlighting, and context-menu Text/HTTP Utilities.",
+  "version": "0.5.1",
   "publisher": "chris-strolia-davis",
   "license": "MIT",
   "author": "Chris Strolia-Davis <christopher.stroliadavis@gmail.com>",
@@ -32,6 +32,67 @@
           ".http",
           ".rest"
         ]
+      },
+      {
+        "id": "toml",
+        "aliases": [
+          "TOML",
+          "toml"
+        ],
+        "extensions": [
+          ".toml",
+          ".tml"
+        ],
+        "configuration": "./syntaxes/toml-language-configuration.json"
+      },
+      {
+        "id": "yaml",
+        "aliases": [
+          "YAML",
+          "yaml",
+          "YML",
+          "yml"
+        ],
+        "extensions": [
+          ".yaml",
+          ".yml"
+        ],
+        "configuration": "./syntaxes/yaml-language-configuration.json"
+      },
+      {
+        "id": "json",
+        "aliases": [
+          "JSON",
+          "json"
+        ],
+        "extensions": [
+          ".json"
+        ],
+        "configuration": "./syntaxes/json-language-configuration.json"
+      },
+      {
+        "id": "jsonc",
+        "aliases": [
+          "JSON with Comments",
+          "jsonc"
+        ],
+        "extensions": [
+          ".jsonc"
+        ],
+        "configuration": "./syntaxes/json-language-configuration.json"
+      },
+      {
+        "id": "jsonl",
+        "aliases": [
+          "JSON Lines",
+          "jsonl",
+          "ndjson"
+        ],
+        "extensions": [
+          ".jsonl",
+          ".ndjson"
+        ],
+        "configuration": "./syntaxes/json-language-configuration.json"
       }
     ],
     "grammars": [
@@ -39,6 +100,31 @@
         "language": "http",
         "scopeName": "source.http",
         "path": "./syntaxes/http.tmLanguage.json"
+      },
+      {
+        "language": "toml",
+        "scopeName": "source.toml",
+        "path": "./syntaxes/toml.tmLanguage.json"
+      },
+      {
+        "language": "yaml",
+        "scopeName": "source.yaml",
+        "path": "./syntaxes/yaml.tmLanguage.json"
+      },
+      {
+        "language": "json",
+        "scopeName": "source.json",
+        "path": "./syntaxes/json.tmLanguage.json"
+      },
+      {
+        "language": "jsonc",
+        "scopeName": "source.json",
+        "path": "./syntaxes/json.tmLanguage.json"
+      },
+      {
+        "language": "jsonl",
+        "scopeName": "source.json",
+        "path": "./syntaxes/json.tmLanguage.json"
       }
     ],
     "commands": [
@@ -388,6 +474,41 @@
           "type": "string",
           "default": "dev",
           "description": "Default environment name selected from http-client.env.json when opening .http files."
+        },
+        "vscodeTailor.syntax.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable the Config Syntax Highlighting feature module for TOML, JSON/JSONC/JSONL, and YAML files."
+        },
+        "vscodeTailor.syntax.toml.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable TOML syntax highlighting and automatic language detection (.toml, .tml)."
+        },
+        "vscodeTailor.syntax.json.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable JSON, JSONC, and JSONL syntax highlighting and automatic language detection (.json, .jsonc, .jsonl, .ndjson)."
+        },
+        "vscodeTailor.syntax.yaml.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable YAML syntax highlighting and automatic language detection (.yaml, .yml)."
+        },
+        "vscodeTailor.syntax.fileAssociations": {
+          "type": "object",
+          "default": {},
+          "additionalProperties": {
+            "type": "string",
+            "enum": [
+              "toml",
+              "yaml",
+              "json",
+              "jsonc",
+              "jsonl"
+            ]
+          },
+          "description": "Custom filename or extension mappings to syntax languages (e.g. { \"Cargo.lock\": \"toml\", \".prettierrc\": \"jsonc\", \".yamllint\": \"yaml\" }) for files whose extension is not .toml, .yaml/.yml, or .json."
         },
         "vscodeTailor.utils.enabled": {
           "type": "boolean",

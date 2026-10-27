@@ -8,10 +8,28 @@ import type {
 /**
  * Normalizes and deduplicates non-empty URI strings while preserving order.
  */
-function deduplicateUris(uris: readonly (string | undefined)[]): string[] {
-  const cleaned = uris.map((u) => (u ?? '').trim()).filter(Boolean);
+function deduplicateUris(uris: readonly string[]): string[] {
+  const cleaned = uris.map((u) => u.trim()).filter(Boolean);
 
   return [...new Set(cleaned)];
+}
+
+/**
+ * Safely extracts an array of URI strings when `value` is an array of strings or URI-like objects.
+ */
+function extractUriList(value: unknown): string[] {
+  return Array.isArray(value) ? deduplicateUris(value.map(extractUriString)) : [];
+}
+
+/**
+ * Safely extracts a URI string from a string or a VS Code `Uri`-like object (`{ scheme: string }`).
+ */
+function extractUriString(value: unknown): string {
+  if (typeof value === 'string') return value.trim();
+
+  if (isUriLike(value)) return String(value).trim();
+
+  return '';
 }
 
 /**
@@ -22,18 +40,32 @@ function isDiagnosticAtLine(diag: DiagnosticSnapshot, line: number): boolean {
 }
 
 /**
+ * Checks whether an unknown value is a VS Code `Uri`-like object with a string `scheme`.
+ */
+function isUriLike(value: unknown): boolean {
+  if (!value || typeof value !== 'object') return false;
+
+  return typeof (value as { scheme?: unknown }).scheme === 'string';
+}
+
+/**
  * Resolves the prioritized list of target URI strings from Explorer multi-select, single-click, or active editor.
  */
 function resolveCandidateUris(
-  clickedUri?: string,
-  selectedUris: readonly string[] = [],
-  activeEditorUri?: string,
+  clickedResource?: unknown,
+  selectedResources?: unknown,
+  activeEditorUri?: unknown,
 ): string[] {
-  const multi = deduplicateUris(selectedUris);
+  const multi = extractUriList(selectedResources);
 
   if (multi.length > 0) return multi;
 
-  return deduplicateUris([clickedUri, activeEditorUri]).slice(0, 1);
+  const single = deduplicateUris([
+    extractUriString(clickedResource),
+    extractUriString(activeEditorUri),
+  ]);
+
+  return single.slice(0, 1);
 }
 
 /**
@@ -70,8 +102,8 @@ export function buildEditorSelectionPayload(
 /**
  * Builds deduplicated `AntigravityFileContextPayload` items from Explorer, tab, or editor context arguments.
  *
- * @param clickedUri - Primary resource URI passed by VS Code menu invocation.
- * @param selectedUris - Optional array of multi-selected Explorer resource URIs.
+ * @param clickedResource - Primary resource URI (or string) passed by VS Code menu invocation.
+ * @param selectedResources - Optional array of multi-selected Explorer URIs (or non-array tab/editor context metadata).
  * @param activeEditorUri - Fallback URI of the currently active text editor.
  * @returns Ordered list of file/folder context payloads for `antigravity.addContext`.
  *
@@ -82,11 +114,11 @@ export function buildEditorSelectionPayload(
  * ```
  */
 export function buildExplorerContextPayloads(
-  clickedUri?: string,
-  selectedUris?: readonly string[],
-  activeEditorUri?: string,
+  clickedResource?: unknown,
+  selectedResources?: unknown,
+  activeEditorUri?: unknown,
 ): AntigravityFileContextPayload[] {
-  const uris = resolveCandidateUris(clickedUri, selectedUris, activeEditorUri);
+  const uris = resolveCandidateUris(clickedResource, selectedResources, activeEditorUri);
 
   return uris.map((uri) => ({ type: 'file', uri }));
 }

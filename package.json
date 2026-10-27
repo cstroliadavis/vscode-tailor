@@ -2,7 +2,7 @@
   "name": "vscode-tailor",
   "displayName": "VS Code Tailor",
   "description": "Personal, modular VS Code workbench extension with an AG Grid-style CSV Editor, Rainbow CSV text highlighting, an interactive HTTP/REST Client Workbench (.http / .rest), TOML/JSON/YAML/Terraform syntax highlighting, Antigravity Chat Context Menus, and context-menu Text/HTTP Utilities.",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "publisher": "chris-strolia-davis",
   "license": "MIT",
   "author": "Chris Strolia-Davis <christopher.stroliadavis@gmail.com>",

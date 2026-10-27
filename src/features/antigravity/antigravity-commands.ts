@@ -5,30 +5,16 @@ import {
   buildExplorerContextPayloads,
   selectDiagnosticForCursor,
 } from './antigravity-context.ts';
-import type { AntigravityFileContextPayload } from './antigravity-types.ts';
-
-/**
- * Extracts file/folder context payloads from VS Code Explorer/Tab arguments and the active editor.
- */
-function collectMenuFilePayloads(
-  clickedResource?: vscode.Uri,
-  selectedResources: readonly vscode.Uri[] = [],
-): AntigravityFileContextPayload[] {
-  const clickedUri = toUriString(clickedResource);
-  const selectedUris = selectedResources.map(toUriString);
-  const activeUri = toUriString(vscode.window.activeTextEditor?.document.uri);
-
-  return buildExplorerContextPayloads(clickedUri, selectedUris, activeUri);
-}
 
 /**
  * Adds one or more files or folders from Explorer, Editor Tab, or active Editor to Antigravity Chat.
  */
 async function handleAddFileToChat(
-  clickedResource?: vscode.Uri,
-  selectedResources?: readonly vscode.Uri[],
+  clickedResource?: unknown,
+  selectedResources?: unknown,
 ): Promise<void> {
-  const payloads = collectMenuFilePayloads(clickedResource, selectedResources);
+  const activeUri = vscode.window.activeTextEditor?.document.uri;
+  const payloads = buildExplorerContextPayloads(clickedResource, selectedResources, activeUri);
 
   if (payloads.length === 0) return;
 
@@ -96,13 +82,6 @@ async function handleExplainProblemInChat(): Promise<void> {
 }
 
 /**
- * Safely converts an optional `vscode.Uri` into its string representation.
- */
-function toUriString(uri?: vscode.Uri): string {
-  return uri ? uri.toString() : '';
-}
-
-/**
  * Registers the Antigravity right-click context menu commands (`addFileToChat`, `addSelectionToChat`, `explainProblem`).
  *
  * @returns Array of command `DisposableLike` subscriptions.
@@ -116,8 +95,7 @@ export function registerAntigravityMenuCommands(): DisposableLike[] {
   return [
     vscode.commands.registerCommand(
       'vscodeTailor.antigravity.addFileToChat',
-      (clicked?: vscode.Uri, selected?: readonly vscode.Uri[]) =>
-        handleAddFileToChat(clicked, selected),
+      (clicked?: unknown, selected?: unknown) => handleAddFileToChat(clicked, selected),
     ),
     vscode.commands.registerCommand('vscodeTailor.antigravity.addSelectionToChat', () =>
       handleAddSelectionToChat(),

@@ -50,6 +50,26 @@ describe('antigravity-context payload builders', () => {
     expect(buildExplorerContextPayloads()).toEqual([]);
   });
 
+  it('handles non-array second arguments passed by editor/title/context and editor/context menus', () => {
+    const mockVscodeUri = {
+      scheme: 'file',
+      toString: () => 'file:///repo/infra/main.tf',
+    };
+    const tabContextObject = { editorIndex: 0, groupId: 1 };
+
+    const fromTabMenu = buildExplorerContextPayloads(
+      mockVscodeUri,
+      tabContextObject,
+      'file:///repo/other.ts',
+    );
+
+    expect(fromTabMenu).toEqual([{ type: 'file', uri: 'file:///repo/infra/main.tf' }]);
+
+    const fromCommandPalette = buildExplorerContextPayloads({ groupId: 1 }, null, mockVscodeUri);
+
+    expect(fromCommandPalette).toEqual([{ type: 'file', uri: 'file:///repo/infra/main.tf' }]);
+  });
+
   it('builds 1-based line range payloads for non-empty editor selections and whole-file payloads when empty', () => {
     const withSelection = buildEditorSelectionPayload({
       endLineZeroBased: 19,

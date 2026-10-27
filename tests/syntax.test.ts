@@ -16,6 +16,7 @@ describe('syntax-detector and syntax-tokenizer', () => {
    */
   interface SetupOverrides {
     jsonEnabled?: boolean;
+    terraformEnabled?: boolean;
     tomlEnabled?: boolean;
     yamlEnabled?: boolean;
   }
@@ -23,6 +24,7 @@ describe('syntax-detector and syntax-tokenizer', () => {
   const setup = (overrides: SetupOverrides = {}) => {
     const settings: SyntaxSettings = Object.freeze({
       jsonEnabled: overrides.jsonEnabled ?? true,
+      terraformEnabled: overrides.terraformEnabled ?? true,
       tomlEnabled: overrides.tomlEnabled ?? true,
       yamlEnabled: overrides.yamlEnabled ?? true,
     });
@@ -30,9 +32,10 @@ describe('syntax-detector and syntax-tokenizer', () => {
     return { settings };
   };
 
-  it('detects TOML, JSON, and YAML formats from standard extensions and custom settings associations', () => {
+  it('detects TOML, JSON, YAML, and Terraform formats from extensions and custom associations', () => {
     const customAssociations = Object.freeze({
       '.prettierrc': 'jsonc' as const,
+      '.terraformrc': 'terraform' as const,
       '.yamllint': 'yaml' as const,
       'Cargo.lock': 'toml' as const,
     });
@@ -48,13 +51,18 @@ describe('syntax-detector and syntax-tokenizer', () => {
     expect(detectSyntaxFormat('/workspace/docker-compose.yml')).toBe('yaml');
     expect(detectSyntaxFormat('/workspace/config.yaml')).toBe('yaml');
     expect(detectSyntaxFormat('/workspace/.yamllint', '', customAssociations)).toBe('yaml');
+    expect(detectSyntaxFormat('/workspace/infra/main.tf')).toBe('terraform');
+    expect(detectSyntaxFormat('/workspace/infra/dev.tfvars')).toBe('terraform');
+    expect(detectSyntaxFormat('/workspace/infra/.terraform.lock.hcl')).toBe('terraform');
+    expect(detectSyntaxFormat('/workspace/.terraformrc', '', customAssociations)).toBe('terraform');
     expect(detectSyntaxFormat('/workspace/README.md', 'markdown')).toBeNull();
   });
 
-  it('resolves target language IDs when a config document opens as plaintext or unspecified', () => {
+  it('resolves target language IDs when a config document opens as plaintext or misclassified', () => {
     const customAssociations = Object.freeze({
       '.bad': 'invalid-lang',
       '.rc': 'YML',
+      '.terraformrc': 'HCL',
       'Cargo.lock': 'TOML',
     });
 
@@ -68,15 +76,28 @@ describe('syntax-detector and syntax-tokenizer', () => {
     expect(resolveTargetLanguageId('/repo/tsconfig.jsonc', 'plaintext')).toBe('jsonc');
     expect(resolveTargetLanguageId('/repo/data.jsonl', 'unknown')).toBe('jsonl');
     expect(resolveTargetLanguageId('/repo/config.yaml', '')).toBe('yaml');
+    expect(resolveTargetLanguageId('/repo/infra/main.tf', 'typescript')).toBe('terraform');
+    expect(resolveTargetLanguageId('/repo/infra/.terraform.lock.hcl', 'plaintext')).toBe(
+      'terraform',
+    );
+    expect(resolveTargetLanguageId('/repo/.terraformrc', 'plaintext', customAssociations)).toBe(
+      'terraform',
+    );
     expect(resolveTargetLanguageId('/repo/.mise.toml', 'toml')).toBeNull();
   });
 
   it('checks per-format enablement flags from SyntaxSettings', () => {
-    const { settings } = setup({ jsonEnabled: true, tomlEnabled: false, yamlEnabled: true });
+    const { settings } = setup({
+      jsonEnabled: true,
+      terraformEnabled: true,
+      tomlEnabled: false,
+      yamlEnabled: true,
+    });
 
     expect(isSyntaxFormatEnabled('toml', settings)).toBe(false);
     expect(isSyntaxFormatEnabled('json', settings)).toBe(true);
     expect(isSyntaxFormatEnabled('yaml', settings)).toBe(true);
+    expect(isSyntaxFormatEnabled('terraform', settings)).toBe(true);
   });
 
   it('tokenizes TOML sections, keys, strings, numbers, booleans, datetimes, and comments', () => {
@@ -148,5 +169,36 @@ describe('syntax-detector and syntax-tokenizer', () => {
     expect(grouped.get('boolean')?.length).toBe(1);
     expect(grouped.get('null')?.length).toBe(1);
     expect(grouped.get('datetime')?.length).toBe(1);
+  });
+
+  it('tokenizes Terraform blocks, attributes, strings, booleans, types, references, and comments', () => {
+    const tfSource = [
+      '# DynamoDB portfolio table',
+      'resource "aws_dynamodb_table" "portfolio" {',
+      '  name = "ChrisPortfolio"',
+      '  billing_mode = "PAY_PER_REQUEST"',
+      '  skip_credentials_validation = true',
+      '  read_capacity = 5',
+      '  type = string',
+      '  attribute {',
+      '    name = "pk"',
+      '  }',
+      '}',
+      'output "table_name" {',
+      '  value = aws_dynamodb_table.portfolio.name',
+      '}',
+    ].join('\n');
+
+    const tokens = tokenizeSyntaxDocument(tfSource, 'terraform');
+    const grouped = groupSyntaxTokensByKind(tokens);
+
+    expect(grouped.get('comment')?.length).toBe(1);
+    expect(grouped.get('section')?.length).toBe(3);
+    expect(grouped.get('key')?.length).toBe(7);
+    expect(grouped.get('string')?.length).toBe(6);
+    expect(grouped.get('boolean')?.length).toBe(1);
+    expect(grouped.get('number')?.length).toBe(1);
+    expect(grouped.get('datetime')?.length).toBe(1);
+    expect(grouped.get('anchor')?.length).toBe(1);
   });
 });

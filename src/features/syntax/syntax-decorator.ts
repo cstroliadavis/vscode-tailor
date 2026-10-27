@@ -118,7 +118,7 @@ function disposeAll(items: Iterable<DisposableLike>): void {
 }
 
 /**
- * Upgrades a document's VS Code language ID once when opened with an unspecified or `plaintext` mode.
+ * Upgrades a document's VS Code language ID once when opened with an unspecified, `plaintext`, or misclassified mode.
  */
 function maybeUpgradeDocumentLanguage(
   document: vscode.TextDocument,
@@ -150,6 +150,7 @@ function readSyntaxSettings(): SyntaxSettings {
   return {
     fileAssociations: config.get<Record<string, SyntaxLanguageId>>('fileAssociations', {}),
     jsonEnabled: config.get<boolean>('json.enabled', true),
+    terraformEnabled: config.get<boolean>('terraform.enabled', true),
     tomlEnabled: config.get<boolean>('toml.enabled', true),
     yamlEnabled: config.get<boolean>('yaml.enabled', true),
   };
@@ -167,7 +168,7 @@ function refreshAllVisibleEditors(state: SyntaxControllerState): void {
 }
 
 /**
- * Applies or clears TOML, JSON, or YAML syntax decorations on a single text editor.
+ * Applies or clears TOML, JSON, YAML, or Terraform syntax decorations on a single text editor.
  */
 function refreshSingleEditor(
   editor: vscode.TextEditor,
@@ -221,7 +222,7 @@ function toVscodeRange(token: SyntaxToken): vscode.Range {
 }
 
 /**
- * Creates and activates the TOML, JSON, and YAML syntax highlighting controller.
+ * Creates and activates the TOML, JSON, YAML, and Terraform syntax highlighting controller.
  *
  * @returns A `DisposableLike` that disposes all editor listeners and token decorations on deactivation.
  *

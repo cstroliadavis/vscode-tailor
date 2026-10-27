@@ -4,7 +4,7 @@ import { createSyntaxHighlightController } from './syntax-decorator.ts';
 /**
  * Creates the Config Syntax Highlighting (`syntax`) feature module for `vscode-tailor`.
  *
- * @returns A `TailorFeatureModule` providing TOML, JSON/JSONC/JSONL, and YAML syntax highlighting and language detection.
+ * @returns A `TailorFeatureModule` providing TOML, JSON/JSONC/JSONL, YAML, and Terraform/HCL syntax highlighting and language detection.
  *
  * @example
  * ```ts
@@ -14,10 +14,10 @@ import { createSyntaxHighlightController } from './syntax-decorator.ts';
 export function createSyntaxFeatureModule(): TailorFeatureModule {
   return {
     id: 'syntax',
-    name: 'Config Syntax Highlighting (TOML / JSON / YAML)',
+    name: 'Config Syntax Highlighting (TOML / JSON / YAML / Terraform)',
 
     description:
-      'Syntax highlighting and automatic language detection for TOML (.toml, .tml), JSON (.json, .jsonc, .jsonl), and YAML (.yaml, .yml) files.',
+      'Syntax highlighting and automatic language detection for TOML (.toml, .tml), JSON (.json, .jsonc, .jsonl), YAML (.yaml, .yml), and Terraform / HCL (.tf, .tfvars, .hcl) files.',
     settingKey: 'vscodeTailor.syntax.enabled',
 
     activate(): DisposableLike[] {

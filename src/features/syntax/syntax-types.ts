@@ -1,15 +1,15 @@
 /**
  * Supported configuration document families for syntax highlighting.
  */
-export type SyntaxFormat = 'json' | 'toml' | 'yaml';
+export type SyntaxFormat = 'json' | 'terraform' | 'toml' | 'yaml';
 
 /**
  * Specific VS Code language identifiers managed by the syntax highlighting feature.
  */
-export type SyntaxLanguageId = 'json' | 'jsonc' | 'jsonl' | 'toml' | 'yaml';
+export type SyntaxLanguageId = 'json' | 'jsonc' | 'jsonl' | 'terraform' | 'toml' | 'yaml';
 
 /**
- * Semantic token categories used to style TOML, JSON, and YAML documents.
+ * Semantic token categories used to style TOML, JSON, YAML, and Terraform documents.
  */
 export type SyntaxTokenKind =
   'anchor' | 'boolean' | 'comment' | 'datetime' | 'key' | 'null' | 'number' | 'section' | 'string';
@@ -27,6 +27,11 @@ export interface SyntaxSettings {
    * Whether JSON, JSONC, and JSONL syntax highlighting is enabled.
    */
   jsonEnabled: boolean;
+
+  /**
+   * Whether Terraform / HCL syntax highlighting is enabled.
+   */
+  terraformEnabled: boolean;
 
   /**
    * Whether TOML syntax highlighting is enabled.

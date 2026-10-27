@@ -46,6 +46,49 @@ const JSON_SCANNER_SPEC: LineScannerSpec = {
   ],
 };
 
+const TERRAFORM_SCANNER_SPEC: LineScannerSpec = {
+  prefixRules: [
+    { kind: 'comment', pattern: /^\s*((?:#|\/\/).*)$/ },
+    { kind: 'comment', pattern: /^\s*(\/\*.*?\*\/)/ },
+    {
+      kind: 'section',
+      pattern:
+        /^\s*\b(terraform|provider|resource|data|variable|output|locals|module|moved|import|check|provisioner|connection|lifecycle|dynamic)\b(?=\s+(?:"[^"]*"|[A-Za-z0-9_-]+|\{))/,
+    },
+    {
+      kind: 'key',
+      pattern: /^\s*([A-Za-z0-9_-]+|"(?:\\.|[^"\\])*")\s*=(?!=)/,
+    },
+    {
+      kind: 'section',
+      pattern: /^\s*([A-Za-z_][A-Za-z0-9_-]*)(?=\s+(?:"(?:\\.|[^"\\])*"\s+)*\{)/,
+    },
+  ],
+  valueRules: [
+    { kind: 'comment', pattern: /^((?:#|\/\/).*)$/ },
+    { kind: 'comment', pattern: /^(\/\*.*?\*\/)/ },
+    {
+      kind: 'key',
+      pattern: /^([A-Za-z0-9_-]+|"(?:\\.|[^"\\])*")\s*(?:=(?!=)|:(?=\s))/,
+    },
+    { kind: 'string', pattern: /^("(?:\\.|[^"\\])*")/ },
+    { kind: 'boolean', pattern: /^(true|false)(?=\s|[,\]}#)]|$)/ },
+    { kind: 'null', pattern: /^(null)(?=\s|[,\]}#)]|$)/ },
+    {
+      kind: 'datetime',
+      pattern: /^(string|number|bool|list|set|map|object|tuple|any)(?=\s|[,([\]}#)]|$)/,
+    },
+    {
+      kind: 'number',
+      pattern: /^(-?(?:0x[0-9A-Fa-f]+|\d+(?:\.\d+)?(?:[eE][+-]?\d+)?))(?=\s|[,\]}#)]|$)/,
+    },
+    {
+      kind: 'anchor',
+      pattern: /^([A-Za-z_][A-Za-z0-9_-]*(?:\.[A-Za-z0-9_*-]+)+)/,
+    },
+  ],
+};
+
 const TOML_SCANNER_SPEC: LineScannerSpec = {
   prefixRules: [
     { kind: 'comment', pattern: /^\s*(#.*)$/ },
@@ -136,6 +179,7 @@ const YAML_SCANNER_SPEC: LineScannerSpec = {
  */
 export const SYNTAX_SCANNER_SPECS: Readonly<Record<SyntaxFormat, LineScannerSpec>> = {
   json: JSON_SCANNER_SPEC,
+  terraform: TERRAFORM_SCANNER_SPEC,
   toml: TOML_SCANNER_SPEC,
   yaml: YAML_SCANNER_SPEC,
 };

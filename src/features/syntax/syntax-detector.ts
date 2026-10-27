@@ -1,10 +1,13 @@
 import type { SyntaxFormat, SyntaxLanguageId, SyntaxSettings } from './syntax-types.ts';
 
 const EXTENSION_TO_LANGUAGE_ID = new Map<string, SyntaxLanguageId>([
+  ['.hcl', 'terraform'],
   ['.json', 'json'],
   ['.jsonc', 'jsonc'],
   ['.jsonl', 'jsonl'],
   ['.ndjson', 'jsonl'],
+  ['.tf', 'terraform'],
+  ['.tfvars', 'terraform'],
   ['.tml', 'toml'],
   ['.toml', 'toml'],
   ['.yaml', 'yaml'],
@@ -12,10 +15,14 @@ const EXTENSION_TO_LANGUAGE_ID = new Map<string, SyntaxLanguageId>([
 ]);
 
 const LANGUAGE_ID_ALIASES = new Map<string, SyntaxLanguageId>([
+  ['hcl', 'terraform'],
   ['json', 'json'],
   ['jsonc', 'jsonc'],
   ['jsonl', 'jsonl'],
   ['ndjson', 'jsonl'],
+  ['terraform', 'terraform'],
+  ['tf', 'terraform'],
+  ['tfvars', 'terraform'],
   ['tml', 'toml'],
   ['toml', 'toml'],
   ['yaml', 'yaml'],
@@ -23,9 +30,11 @@ const LANGUAGE_ID_ALIASES = new Map<string, SyntaxLanguageId>([
 ]);
 
 const LANGUAGE_ID_TO_FORMAT = new Map<string, SyntaxFormat>([
+  ['hcl', 'terraform'],
   ['json', 'json'],
   ['jsonc', 'json'],
   ['jsonl', 'json'],
+  ['terraform', 'terraform'],
   ['toml', 'toml'],
   ['yaml', 'yaml'],
   ['yml', 'yaml'],
@@ -33,9 +42,11 @@ const LANGUAGE_ID_TO_FORMAT = new Map<string, SyntaxFormat>([
 
 const UNSPECIFIED_LANGUAGE_IDS = new Set([
   '',
+  'javascript',
   'language_unspecified',
   'plaintext',
   'text',
+  'typescript',
   'unknown',
 ]);
 
@@ -129,17 +140,17 @@ function normalizeLanguageId(languageId?: string): string {
 }
 
 /**
- * Detects the syntax format family (`'toml'`, `'json'`, or `'yaml'`) for a document.
+ * Detects the syntax format family (`'toml'`, `'json'`, `'yaml'`, or `'terraform'`) for a document.
  *
  * @param fileName - Document file path or basename.
  * @param languageId - Optional VS Code `document.languageId`.
  * @param associations - Optional user-configured filename/extension associations from settings.
- * @returns The detected `SyntaxFormat`, or `null` when the file is not TOML, JSON, or YAML.
+ * @returns The detected `SyntaxFormat`, or `null` when the file is not TOML, JSON, YAML, or Terraform.
  *
  * @example
  * ```ts
  * detectSyntaxFormat('/repo/.mise.toml'); // => 'toml'
- * detectSyntaxFormat('/repo/config.yaml'); // => 'yaml'
+ * detectSyntaxFormat('/repo/infra/main.tf'); // => 'terraform'
  * detectSyntaxFormat('/repo/Cargo.lock', '', { 'Cargo.lock': 'toml' }); // => 'toml'
  * ```
  */
@@ -156,18 +167,20 @@ export function detectSyntaxFormat(
 /**
  * Checks whether the given syntax format is enabled in `SyntaxSettings`.
  *
- * @param format - Target syntax format (`'toml'`, `'json'`, or `'yaml'`).
+ * @param format - Target syntax format (`'toml'`, `'json'`, `'yaml'`, or `'terraform'`).
  * @param settings - Current per-language enablement flags.
  * @returns `true` when highlighting is enabled for `format`.
  *
  * @example
  * ```ts
- * isSyntaxFormatEnabled('toml', { jsonEnabled: true, tomlEnabled: true, yamlEnabled: false }); // => true
+ * const s = { jsonEnabled: true, terraformEnabled: true, tomlEnabled: true, yamlEnabled: false };
+ * isSyntaxFormatEnabled('terraform', s); // => true
  * ```
  */
 export function isSyntaxFormatEnabled(format: SyntaxFormat, settings: SyntaxSettings): boolean {
   const map: Record<SyntaxFormat, boolean> = {
     json: settings.jsonEnabled,
+    terraform: settings.terraformEnabled,
     toml: settings.tomlEnabled,
     yaml: settings.yamlEnabled,
   };
@@ -176,7 +189,7 @@ export function isSyntaxFormatEnabled(format: SyntaxFormat, settings: SyntaxSett
 }
 
 /**
- * Resolves the target VS Code language ID to assign when a document currently has an unspecified or plaintext language ID.
+ * Resolves the target VS Code language ID to assign when a document currently has an unspecified, plaintext, or misclassified language ID.
  *
  * @param fileName - Document file path or basename.
  * @param currentLanguageId - Current `document.languageId` reported by VS Code.
@@ -186,6 +199,7 @@ export function isSyntaxFormatEnabled(format: SyntaxFormat, settings: SyntaxSett
  * @example
  * ```ts
  * resolveTargetLanguageId('/workspace/.mise.toml', 'plaintext'); // => 'toml'
+ * resolveTargetLanguageId('/workspace/infra/main.tf', 'typescript'); // => 'terraform'
  * resolveTargetLanguageId('/workspace/Cargo.lock', 'plaintext', { 'Cargo.lock': 'toml' }); // => 'toml'
  * ```
  */

@@ -1,8 +1,8 @@
 {
   "name": "vscode-tailor",
   "displayName": "VS Code Tailor",
-  "description": "Personal, modular VS Code workbench extension with an AG Grid-style CSV Editor, Rainbow CSV text highlighting, an interactive HTTP/REST Client Workbench (.http / .rest), TOML/JSON/YAML syntax highlighting, and context-menu Text/HTTP Utilities.",
-  "version": "0.5.1",
+  "description": "Personal, modular VS Code workbench extension with an AG Grid-style CSV Editor, Rainbow CSV text highlighting, an interactive HTTP/REST Client Workbench (.http / .rest), TOML/JSON/YAML/Terraform syntax highlighting, and context-menu Text/HTTP Utilities.",
+  "version": "0.6.0",
   "publisher": "chris-strolia-davis",
   "license": "MIT",
   "author": "Chris Strolia-Davis <christopher.stroliadavis@gmail.com>",
@@ -93,6 +93,21 @@
           ".ndjson"
         ],
         "configuration": "./syntaxes/json-language-configuration.json"
+      },
+      {
+        "id": "terraform",
+        "aliases": [
+          "Terraform",
+          "terraform",
+          "HCL",
+          "hcl"
+        ],
+        "extensions": [
+          ".tf",
+          ".tfvars",
+          ".hcl"
+        ],
+        "configuration": "./syntaxes/terraform-language-configuration.json"
       }
     ],
     "grammars": [
@@ -125,6 +140,11 @@
         "language": "jsonl",
         "scopeName": "source.json",
         "path": "./syntaxes/json.tmLanguage.json"
+      },
+      {
+        "language": "terraform",
+        "scopeName": "source.terraform",
+        "path": "./syntaxes/terraform.tmLanguage.json"
       }
     ],
     "commands": [
@@ -478,7 +498,7 @@
         "vscodeTailor.syntax.enabled": {
           "type": "boolean",
           "default": true,
-          "description": "Enable the Config Syntax Highlighting feature module for TOML, JSON/JSONC/JSONL, and YAML files."
+          "description": "Enable the Config Syntax Highlighting feature module for TOML, JSON/JSONC/JSONL, YAML, and Terraform/HCL files."
         },
         "vscodeTailor.syntax.toml.enabled": {
           "type": "boolean",
@@ -495,6 +515,11 @@
           "default": true,
           "description": "Enable YAML syntax highlighting and automatic language detection (.yaml, .yml)."
         },
+        "vscodeTailor.syntax.terraform.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable Terraform / HCL syntax highlighting and automatic language detection (.tf, .tfvars, .hcl)."
+        },
         "vscodeTailor.syntax.fileAssociations": {
           "type": "object",
           "default": {},
@@ -505,10 +530,11 @@
               "yaml",
               "json",
               "jsonc",
-              "jsonl"
+              "jsonl",
+              "terraform"
             ]
           },
-          "description": "Custom filename or extension mappings to syntax languages (e.g. { \"Cargo.lock\": \"toml\", \".prettierrc\": \"jsonc\", \".yamllint\": \"yaml\" }) for files whose extension is not .toml, .yaml/.yml, or .json."
+          "description": "Custom filename or extension mappings to syntax languages (e.g. { \"Cargo.lock\": \"toml\", \".prettierrc\": \"jsonc\", \".yamllint\": \"yaml\", \".terraformrc\": \"terraform\" }) for files whose extension is not .toml, .yaml/.yml, .json, or .tf/.hcl."
         },
         "vscodeTailor.utils.enabled": {
           "type": "boolean",

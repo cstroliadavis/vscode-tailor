@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { createAntigravityFeatureModule } from './features/antigravity/index.ts';
 import { createCsvFeatureModule } from './features/csv/index.ts';
 import { createHttpFeatureModule } from './features/http/index.ts';
 import { createSyntaxFeatureModule } from './features/syntax/index.ts';
@@ -49,6 +50,7 @@ function registerBuiltInFeatures(
   registry: FeatureRegistry,
   context: vscode.ExtensionContext,
 ): void {
+  registry.register(createAntigravityFeatureModule());
   registry.register(createCsvFeatureModule(context.extensionUri));
   registry.register(createHttpFeatureModule(context));
   registry.register(createSyntaxFeatureModule());

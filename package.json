@@ -1,8 +1,8 @@
 {
   "name": "vscode-tailor",
   "displayName": "VS Code Tailor",
-  "description": "Personal, modular VS Code workbench extension with an AG Grid-style CSV Editor, Rainbow CSV text highlighting, an interactive HTTP/REST Client Workbench (.http / .rest), TOML/JSON/YAML/Terraform syntax highlighting, and context-menu Text/HTTP Utilities.",
-  "version": "0.6.0",
+  "description": "Personal, modular VS Code workbench extension with an AG Grid-style CSV Editor, Rainbow CSV text highlighting, an interactive HTTP/REST Client Workbench (.http / .rest), TOML/JSON/YAML/Terraform syntax highlighting, Antigravity Chat Context Menus, and context-menu Text/HTTP Utilities.",
+  "version": "0.7.0",
   "publisher": "chris-strolia-davis",
   "license": "MIT",
   "author": "Chris Strolia-Davis <christopher.stroliadavis@gmail.com>",
@@ -295,6 +295,21 @@
         "command": "vscodeTailor.utils.caseLower",
         "title": "Case: lower case",
         "category": "Tailor Utils"
+      },
+      {
+        "command": "vscodeTailor.antigravity.addFileToChat",
+        "title": "Add File to Chat",
+        "category": "Antigravity"
+      },
+      {
+        "command": "vscodeTailor.antigravity.addSelectionToChat",
+        "title": "Add Selection to Chat",
+        "category": "Antigravity"
+      },
+      {
+        "command": "vscodeTailor.antigravity.explainProblem",
+        "title": "Explain & Fix Problem in Chat",
+        "category": "Antigravity"
       }
     ],
     "submenus": [
@@ -358,9 +373,38 @@
       ],
       "editor/context": [
         {
+          "command": "vscodeTailor.antigravity.addSelectionToChat",
+          "when": "editorTextFocus && editorHasSelection && config.vscodeTailor.antigravity.enabled",
+          "group": "1_modification@8"
+        },
+        {
+          "command": "vscodeTailor.antigravity.addFileToChat",
+          "when": "editorTextFocus && config.vscodeTailor.antigravity.enabled",
+          "group": "1_modification@9"
+        },
+        {
+          "command": "vscodeTailor.antigravity.explainProblem",
+          "when": "editorTextFocus && config.vscodeTailor.antigravity.enabled",
+          "group": "1_modification@9"
+        },
+        {
           "submenu": "vscodeTailor.utilsMenu",
           "when": "editorTextFocus && config.vscodeTailor.utils.enabled",
           "group": "1_modification@10"
+        }
+      ],
+      "editor/title/context": [
+        {
+          "command": "vscodeTailor.antigravity.addFileToChat",
+          "when": "resourceScheme == 'file' && config.vscodeTailor.antigravity.enabled",
+          "group": "1_open@10"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "vscodeTailor.antigravity.addFileToChat",
+          "when": "config.vscodeTailor.antigravity.enabled",
+          "group": "navigation@10"
         }
       ],
       "vscodeTailor.utilsMenu": [
@@ -464,6 +508,11 @@
     "configuration": {
       "title": "VS Code Tailor",
       "properties": {
+        "vscodeTailor.antigravity.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable Google Antigravity right-click context menu actions (Add File to Chat in Explorer/Tab/Editor, Add Selection to Chat, and Explain & Fix Problem in Chat)."
+        },
         "vscodeTailor.csv.enabled": {
           "type": "boolean",
           "default": true,

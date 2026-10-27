@@ -171,10 +171,29 @@ Provides both **TextMate language grammars & bracket/comment configurations** an
   - Files without standard extensions (such as `Cargo.lock`, `.prettierrc`, `.yamllint`, or
     `.terraformrc`) can be mapped in `settings.json` via `vscodeTailor.syntax.fileAssociations`.
 
+### 6. Antigravity Chat Context Menus (`antigravity` — Explorer, Tab, and Editor Context Actions)
+
+Bridges VS Code's right-click context menus directly to Google Antigravity's `antigravity.addContext`,
+`antigravity.insertSnippet`, and `antigravity.explainAndFixProblem` commands:
+
+- **Explorer Sidebar Right-Click (`explorer/context`)**:
+  - **`Antigravity: Add File to Chat`** (`vscodeTailor.antigravity.addFileToChat`) — attaches any
+    right-clicked file, folder, or multi-selected set of files/folders to the Antigravity Chat input
+    and focuses the panel.
+- **Editor Tab Right-Click (`editor/title/context`)**:
+  - **`Antigravity: Add File to Chat`** — attaches that tab's file directly to Antigravity Chat.
+- **Editor Right-Click (`editor/context`)**:
+  - **`Antigravity: Add Selection to Chat`** (`vscodeTailor.antigravity.addSelectionToChat`) —
+    appears whenever text is highlighted in the editor and attaches the selected line range.
+  - **`Antigravity: Add File to Chat`** — attaches the active document to Antigravity Chat.
+  - **`Antigravity: Explain & Fix Problem in Chat`** (`vscodeTailor.antigravity.explainProblem`) —
+    sends the diagnostic at the current cursor (or first problem in the file) to Antigravity Chat.
+
 ## Configuration Settings
 
 | Setting                                 | Type      | Default | Description                                                                            |
 | :-------------------------------------- | :-------- | :------ | :------------------------------------------------------------------------------------- |
+| `vscodeTailor.antigravity.enabled`      | `boolean` | `true`  | Enable Antigravity right-click context menu actions in Explorer, Tabs, and Editor.     |
 | `vscodeTailor.csv.enabled`              | `boolean` | `true`  | Enable the CSV Workbench module (Grid View + Rainbow CSV Text Decorator).              |
 | `vscodeTailor.csv.rainbowEnabled`       | `boolean` | `true`  | Enable Rainbow CSV column highlighting and hover tooltips in the Text Editor.          |
 | `vscodeTailor.csv.defaultHeaderRows`    | `number`  | `1`     | Default number of top contiguous rows pinned as sticky headers in Grid View.           |

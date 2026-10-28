@@ -7,6 +7,8 @@ const EXTENSION_TO_LANGUAGE_ID = new Map<string, SyntaxLanguageId>([
   ['.jsonl', 'jsonl'],
   ['.ndjson', 'jsonl'],
   ['.tf', 'terraform'],
+  ['.tfstate', 'json'],
+  ['.tfstate.backup', 'json'],
   ['.tfvars', 'terraform'],
   ['.tml', 'toml'],
   ['.toml', 'toml'],
@@ -63,7 +65,9 @@ function buildAssociationLookup(
 
     if (!validLang) continue;
 
-    map.set(pattern.trim().toLowerCase(), validLang);
+    const normalizedKey = pattern.trim().toLowerCase().replace(/^\*/, '');
+
+    map.set(normalizedKey, validLang);
   }
 
   return map;
@@ -80,12 +84,14 @@ function extractBaseName(fileName: string): string {
 }
 
 /**
- * Extracts the trailing file extension (including leading dot) from a lowercase basename.
+ * Extracts all dot-prefixed suffixes of a lowercase basename from longest to shortest (e.g. `['.tfstate.backup', '.backup']`).
  */
-function extractExtension(baseName: string): string {
-  const dotIdx = baseName.lastIndexOf('.');
+function extractExtensions(baseName: string): string[] {
+  const parts = baseName.split('.');
 
-  return dotIdx >= 0 ? baseName.slice(dotIdx) : '';
+  if (parts.length < 2) return [];
+
+  return parts.slice(1).map((_, idx) => `.${parts.slice(idx + 1).join('.')}`);
 }
 
 /**
@@ -110,7 +116,9 @@ function inferLanguageIdFromFileName(
   associations?: Readonly<Record<string, string>>,
 ): SyntaxLanguageId | null {
   const baseName = extractBaseName(fileName);
-  const extMatch = EXTENSION_TO_LANGUAGE_ID.get(extractExtension(baseName));
+  const extMatch = extractExtensions(baseName)
+    .map((ext) => EXTENSION_TO_LANGUAGE_ID.get(ext))
+    .find(Boolean);
 
   if (extMatch) return extMatch;
 
@@ -118,7 +126,7 @@ function inferLanguageIdFromFileName(
 }
 
 /**
- * Matches a lowercase basename or its extension against user-configured `fileAssociations`.
+ * Matches a lowercase basename or any of its extensions against user-configured `fileAssociations`.
  */
 function matchConfiguredAssociation(
   baseName: string,
@@ -127,7 +135,8 @@ function matchConfiguredAssociation(
   if (!associations) return null;
 
   const lookup = buildAssociationLookup(associations);
-  const matched = [baseName, extractExtension(baseName)].map((k) => lookup.get(k)).find(Boolean);
+  const candidates = [baseName, ...extractExtensions(baseName)];
+  const matched = candidates.map((k) => lookup.get(k)).find(Boolean);
 
   return matched ?? null;
 }
@@ -151,7 +160,7 @@ function normalizeLanguageId(languageId?: string): string {
  * ```ts
  * detectSyntaxFormat('/repo/.mise.toml'); // => 'toml'
  * detectSyntaxFormat('/repo/infra/main.tf'); // => 'terraform'
- * detectSyntaxFormat('/repo/Cargo.lock', '', { 'Cargo.lock': 'toml' }); // => 'toml'
+ * detectSyntaxFormat('/repo/infra/terraform.tfstate.backup'); // => 'json'
  * ```
  */
 export function detectSyntaxFormat(
@@ -200,7 +209,7 @@ export function isSyntaxFormatEnabled(format: SyntaxFormat, settings: SyntaxSett
  * ```ts
  * resolveTargetLanguageId('/workspace/.mise.toml', 'plaintext'); // => 'toml'
  * resolveTargetLanguageId('/workspace/infra/main.tf', 'typescript'); // => 'terraform'
- * resolveTargetLanguageId('/workspace/Cargo.lock', 'plaintext', { 'Cargo.lock': 'toml' }); // => 'toml'
+ * resolveTargetLanguageId('/workspace/infra/terraform.tfstate.backup', 'plaintext'); // => 'json'
  * ```
  */
 export function resolveTargetLanguageId(

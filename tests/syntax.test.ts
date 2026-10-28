@@ -45,6 +45,8 @@ describe('syntax-detector and syntax-tokenizer', () => {
     expect(detectSyntaxFormat('/workspace/Cargo.lock')).toBeNull();
     expect(detectSyntaxFormat('/workspace/Cargo.lock', '', customAssociations)).toBe('toml');
     expect(detectSyntaxFormat('/workspace/package.json', 'json')).toBe('json');
+    expect(detectSyntaxFormat('/workspace/infra/terraform.tfstate')).toBe('json');
+    expect(detectSyntaxFormat('/workspace/infra/terraform.tfstate.backup')).toBe('json');
     expect(detectSyntaxFormat('/workspace/settings.jsonc')).toBe('json');
     expect(detectSyntaxFormat('/workspace/events.jsonl')).toBe('json');
     expect(detectSyntaxFormat('/workspace/.prettierrc', '', customAssociations)).toBe('json');
@@ -74,6 +76,10 @@ describe('syntax-detector and syntax-tokenizer', () => {
     expect(resolveTargetLanguageId('/repo/app.rc', 'plaintext', customAssociations)).toBe('yaml');
     expect(resolveTargetLanguageId('/repo/file.bad', 'plaintext', customAssociations)).toBeNull();
     expect(resolveTargetLanguageId('/repo/tsconfig.jsonc', 'plaintext')).toBe('jsonc');
+    expect(resolveTargetLanguageId('/repo/infra/terraform.tfstate', 'plaintext')).toBe('json');
+    expect(resolveTargetLanguageId('/repo/infra/terraform.tfstate.backup', 'plaintext')).toBe(
+      'json',
+    );
     expect(resolveTargetLanguageId('/repo/data.jsonl', 'unknown')).toBe('jsonl');
     expect(resolveTargetLanguageId('/repo/config.yaml', '')).toBe('yaml');
     expect(resolveTargetLanguageId('/repo/infra/main.tf', 'typescript')).toBe('terraform');

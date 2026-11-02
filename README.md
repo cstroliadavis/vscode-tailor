@@ -189,28 +189,54 @@ Bridges VS Code's right-click context menus directly to Google Antigravity's `an
   - **`Antigravity: Explain & Fix Problem in Chat`** (`vscodeTailor.antigravity.explainProblem`) —
     sends the diagnostic at the current cursor (or first problem in the file) to Antigravity Chat.
 
+### 7. Scratch Files & Explorer Scratches View (`scratches` — JetBrains-Style Scratches)
+
+Brings JetBrains-style on-the-fly **Scratch Files** and an Explorer **Scratches** TreeView to VS
+Code:
+
+- **Right-Click `Scratch File` in Explorer (`explorer/context`)**:
+  - Right-click any file, folder, or workspace in Explorer (or click the `+` icon in the `Scratches`
+    view header) and pick **`Scratch File`** (`vscodeTailor.scratches.create`).
+  - Pick from 25+ pinned formats (`.ts`, `.js`, `.json`, `.jsonc`, `.jsonl`, `.http`, `.csv`, `.md`,
+    `.sql`, `.py`, `.sh`, `.yaml`, `.toml`, `.tf`, `.html`, `.css`, `.cs`, `.go`, `.rs`, etc.) or
+    any language contributed by installed VS Code extensions—or type a custom `filename.ext`
+    directly in the QuickPick filter box.
+  - Automatically numbers files (`scratch.ts`, `scratch_1.ts`, `scratch_2.ts`) inside a subfolder
+    named after the workspace or root project folder (`<rootPath>/<projectFolder>/`) and opens the
+    new scratch file immediately.
+- **Explorer `Scratches` TreeView (`vscodeTailor.scratchesView`)**:
+  - Appears inside the left Explorer sidebar with two top-level nodes:
+    1. **`All Scratches`** (collapsed by default) — browses the entire configured scratches root
+       directory across all projects like an Explorer tree.
+    2. **`<Current Workspace / Project>`** (expanded by default) — displays the scratch folder
+       associated with the currently open workspace or root project folder.
+  - Supports right-click **Scratch File**, **Rename Scratch...**, **Delete Scratch...**, and
+    **Reveal in Finder**.
+
 ## Configuration Settings
 
-| Setting                                 | Type      | Default | Description                                                                            |
-| :-------------------------------------- | :-------- | :------ | :------------------------------------------------------------------------------------- |
-| `vscodeTailor.antigravity.enabled`      | `boolean` | `true`  | Enable Antigravity right-click context menu actions in Explorer, Tabs, and Editor.     |
-| `vscodeTailor.csv.enabled`              | `boolean` | `true`  | Enable the CSV Workbench module (Grid View + Rainbow CSV Text Decorator).              |
-| `vscodeTailor.csv.rainbowEnabled`       | `boolean` | `true`  | Enable Rainbow CSV column highlighting and hover tooltips in the Text Editor.          |
-| `vscodeTailor.csv.defaultHeaderRows`    | `number`  | `1`     | Default number of top contiguous rows pinned as sticky headers in Grid View.           |
-| `vscodeTailor.csv.schemas`              | `object`  | `{}`    | Per-file CSV column schemas (`dataType`, `decimals`, `dateFormat`, `pinned`, `width`). |
-| `vscodeTailor.http.enabled`             | `boolean` | `true`  | Enable the HTTP Client Workbench module (`.http`/`.rest` GUI, CodeLens, and secrets).  |
-| `vscodeTailor.http.defaultEnvironment`  | `string`  | `"dev"` | Default environment name selected from `http-client.env.json` when opening `.http`.    |
-| `vscodeTailor.syntax.enabled`           | `boolean` | `true`  | Enable Config Syntax Highlighting for TOML, JSON/JSONC/JSONL, YAML, and Terraform.     |
-| `vscodeTailor.syntax.toml.enabled`      | `boolean` | `true`  | Enable TOML syntax highlighting and automatic language detection.                      |
-| `vscodeTailor.syntax.json.enabled`      | `boolean` | `true`  | Enable JSON, JSONC, and JSONL syntax highlighting and automatic language detection.    |
-| `vscodeTailor.syntax.yaml.enabled`      | `boolean` | `true`  | Enable YAML syntax highlighting and automatic language detection.                      |
-| `vscodeTailor.syntax.terraform.enabled` | `boolean` | `true`  | Enable Terraform / HCL syntax highlighting and automatic language detection.           |
-| `vscodeTailor.syntax.fileAssociations`  | `object`  | `{}`    | Map non-standard filenames/extensions (e.g. `Cargo.lock`) to supported syntax formats. |
-| `vscodeTailor.utils.enabled`            | `boolean` | `true`  | Enable the Text & HTTP Utilities module and editor right-click `Utils` context menu.   |
-| `vscodeTailor.utils.sort.enabled`       | `boolean` | `true`  | Show sorting commands in the `Utils` context menu.                                     |
-| `vscodeTailor.utils.encode.enabled`     | `boolean` | `true`  | Show Base64, URL, and HTML encode/decode toggle commands in the `Utils` context menu.  |
-| `vscodeTailor.utils.http.enabled`       | `boolean` | `true`  | Show HTTP conversion commands (`cURL` / `fetch()` / `.http`) in the `Utils` menu.      |
-| `vscodeTailor.utils.case.enabled`       | `boolean` | `true`  | Show case conversion commands in the `Utils` context menu.                             |
+| Setting                                 | Type      | Default                       | Description                                                                            |
+| :-------------------------------------- | :-------- | :---------------------------- | :------------------------------------------------------------------------------------- |
+| `vscodeTailor.antigravity.enabled`      | `boolean` | `true`                        | Enable Antigravity right-click context menu actions in Explorer, Tabs, and Editor.     |
+| `vscodeTailor.csv.enabled`              | `boolean` | `true`                        | Enable the CSV Workbench module (Grid View + Rainbow CSV Text Decorator).              |
+| `vscodeTailor.csv.rainbowEnabled`       | `boolean` | `true`                        | Enable Rainbow CSV column highlighting and hover tooltips in the Text Editor.          |
+| `vscodeTailor.csv.defaultHeaderRows`    | `number`  | `1`                           | Default number of top contiguous rows pinned as sticky headers in Grid View.           |
+| `vscodeTailor.csv.schemas`              | `object`  | `{}`                          | Per-file CSV column schemas (`dataType`, `decimals`, `dateFormat`, `pinned`, `width`). |
+| `vscodeTailor.http.enabled`             | `boolean` | `true`                        | Enable the HTTP Client Workbench module (`.http`/`.rest` GUI, CodeLens, and secrets).  |
+| `vscodeTailor.http.defaultEnvironment`  | `string`  | `"dev"`                       | Default environment name selected from `http-client.env.json` when opening `.http`.    |
+| `vscodeTailor.scratches.enabled`        | `boolean` | `true`                        | Enable the Scratch Files feature module and Explorer `Scratches` TreeView.             |
+| `vscodeTailor.scratches.rootPath`       | `string`  | `".../ag-projects/scratches"` | Root directory where scratch files are stored inside workspace/project subfolders.     |
+| `vscodeTailor.syntax.enabled`           | `boolean` | `true`                        | Enable Config Syntax Highlighting for TOML, JSON/JSONC/JSONL, YAML, and Terraform.     |
+| `vscodeTailor.syntax.toml.enabled`      | `boolean` | `true`                        | Enable TOML syntax highlighting and automatic language detection.                      |
+| `vscodeTailor.syntax.json.enabled`      | `boolean` | `true`                        | Enable JSON, JSONC, and JSONL syntax highlighting and automatic language detection.    |
+| `vscodeTailor.syntax.yaml.enabled`      | `boolean` | `true`                        | Enable YAML syntax highlighting and automatic language detection.                      |
+| `vscodeTailor.syntax.terraform.enabled` | `boolean` | `true`                        | Enable Terraform / HCL syntax highlighting and automatic language detection.           |
+| `vscodeTailor.syntax.fileAssociations`  | `object`  | `{}`                          | Map non-standard filenames/extensions (e.g. `Cargo.lock`) to supported syntax formats. |
+| `vscodeTailor.utils.enabled`            | `boolean` | `true`                        | Enable the Text & HTTP Utilities module and editor right-click `Utils` context menu.   |
+| `vscodeTailor.utils.sort.enabled`       | `boolean` | `true`                        | Show sorting commands in the `Utils` context menu.                                     |
+| `vscodeTailor.utils.encode.enabled`     | `boolean` | `true`                        | Show Base64, URL, and HTML encode/decode toggle commands in the `Utils` context menu.  |
+| `vscodeTailor.utils.http.enabled`       | `boolean` | `true`                        | Show HTTP conversion commands (`cURL` / `fetch()` / `.http`) in the `Utils` menu.      |
+| `vscodeTailor.utils.case.enabled`       | `boolean` | `true`                        | Show case conversion commands in the `Utils` context menu.                             |
 
 ## Development & Local Installation
 

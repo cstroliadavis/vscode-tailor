@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { createAntigravityFeatureModule } from './features/antigravity/index.ts';
 import { createCsvFeatureModule } from './features/csv/index.ts';
 import { createHttpFeatureModule } from './features/http/index.ts';
+import { createScratchesFeatureModule } from './features/scratches/index.ts';
 import { createSyntaxFeatureModule } from './features/syntax/index.ts';
 import { createUtilsFeatureModule } from './features/utils/index.ts';
 import { createFeatureRegistry } from './registry.ts';
@@ -53,6 +54,7 @@ function registerBuiltInFeatures(
   registry.register(createAntigravityFeatureModule());
   registry.register(createCsvFeatureModule(context.extensionUri));
   registry.register(createHttpFeatureModule(context));
+  registry.register(createScratchesFeatureModule());
   registry.register(createSyntaxFeatureModule());
   registry.register(createUtilsFeatureModule());
 }

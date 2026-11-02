@@ -1,8 +1,8 @@
 {
   "name": "vscode-tailor",
   "displayName": "VS Code Tailor",
-  "description": "Personal, modular VS Code workbench extension with an AG Grid-style CSV Editor, Rainbow CSV text highlighting, an interactive HTTP/REST Client Workbench (.http / .rest), TOML/JSON/YAML/Terraform syntax highlighting, Antigravity Chat Context Menus, and context-menu Text/HTTP Utilities.",
-  "version": "0.7.2",
+  "description": "Personal, modular VS Code workbench extension with an AG Grid-style CSV Editor, Rainbow CSV text highlighting, an interactive HTTP/REST Client Workbench (.http / .rest), JetBrains-style Scratch Files & Explorer Scratches View, TOML/JSON/YAML/Terraform syntax highlighting, Antigravity Chat Context Menus, and context-menu Text/HTTP Utilities.",
+  "version": "0.8.0",
   "publisher": "chris-strolia-davis",
   "license": "MIT",
   "author": "Chris Strolia-Davis <christopher.stroliadavis@gmail.com>",
@@ -312,8 +312,47 @@
         "command": "vscodeTailor.antigravity.explainProblem",
         "title": "Explain & Fix Problem in Chat",
         "category": "Antigravity"
+      },
+      {
+        "command": "vscodeTailor.scratches.create",
+        "title": "Scratch File",
+        "category": "Tailor Scratches",
+        "icon": "$(new-file)"
+      },
+      {
+        "command": "vscodeTailor.scratches.refresh",
+        "title": "Refresh Scratches",
+        "category": "Tailor Scratches",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "vscodeTailor.scratches.rename",
+        "title": "Rename Scratch...",
+        "category": "Tailor Scratches",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "vscodeTailor.scratches.delete",
+        "title": "Delete Scratch...",
+        "category": "Tailor Scratches",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "vscodeTailor.scratches.revealInFinder",
+        "title": "Reveal in Finder",
+        "category": "Tailor Scratches",
+        "icon": "$(folder-opened)"
       }
     ],
+    "views": {
+      "explorer": [
+        {
+          "id": "vscodeTailor.scratchesView",
+          "name": "Scratches",
+          "when": "config.vscodeTailor.scratches.enabled"
+        }
+      ]
+    },
     "submenus": [
       {
         "id": "vscodeTailor.utilsMenu",
@@ -404,9 +443,48 @@
       ],
       "explorer/context": [
         {
+          "command": "vscodeTailor.scratches.create",
+          "when": "config.vscodeTailor.scratches.enabled",
+          "group": "navigation@9"
+        },
+        {
           "command": "vscodeTailor.antigravity.addFileToChat",
           "when": "config.vscodeTailor.antigravity.enabled",
           "group": "navigation@10"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "vscodeTailor.scratches.create",
+          "when": "view == 'vscodeTailor.scratchesView'",
+          "group": "navigation@1"
+        },
+        {
+          "command": "vscodeTailor.scratches.refresh",
+          "when": "view == 'vscodeTailor.scratchesView'",
+          "group": "navigation@2"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "vscodeTailor.scratches.create",
+          "when": "view == 'vscodeTailor.scratchesView'",
+          "group": "navigation@1"
+        },
+        {
+          "command": "vscodeTailor.scratches.revealInFinder",
+          "when": "view == 'vscodeTailor.scratchesView'",
+          "group": "2_workspace@1"
+        },
+        {
+          "command": "vscodeTailor.scratches.rename",
+          "when": "view == 'vscodeTailor.scratchesView' && (viewItem == 'scratch_file' || viewItem == 'scratch_directory')",
+          "group": "7_modification@1"
+        },
+        {
+          "command": "vscodeTailor.scratches.delete",
+          "when": "view == 'vscodeTailor.scratchesView' && (viewItem == 'scratch_file' || viewItem == 'scratch_directory')",
+          "group": "7_modification@2"
         }
       ],
       "vscodeTailor.utilsMenu": [
@@ -545,6 +623,16 @@
           "type": "string",
           "default": "dev",
           "description": "Default environment name selected from http-client.env.json when opening .http files."
+        },
+        "vscodeTailor.scratches.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable the Scratch Files feature module (Explorer 'Scratch File' right-click action and the Explorer 'Scratches' TreeView)."
+        },
+        "vscodeTailor.scratches.rootPath": {
+          "type": "string",
+          "default": "/Users/christopherstrolia-davis/Library/CloudStorage/GoogleDrive-christopher.stroliadavis@gmail.com/My Drive/ag-projects/scratches",
+          "description": "Root directory where scratch files are saved inside workspace/project-named subfolders."
         },
         "vscodeTailor.syntax.enabled": {
           "type": "boolean",
